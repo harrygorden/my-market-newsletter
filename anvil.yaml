@@ -1,12 +1,23 @@
 allow_embedding: false
 dependencies: []
-name: M3 App 1
-package_name: M3_App_1
+name: My Market Newsletter
+package_name: My_Market_Newsletter
 renamed: true
 runtime_options:
   client_version: '3'
-  server_spec: {base: python310-minimal}
+  server_spec: {base: python310-standard}
   server_version: python3-sandbox
   version: 2
-services: []
+scheduled_tasks: []
+services:
+- client_config: {}
+  server_config: {}
+  source: /runtime/services/tables.yml
+- client_config: {}
+  server_config: {}
+  source: /runtime/services/anvil/secrets.yml
+- client_config: {}
+  server_config: {enc_delegation_refresh_token: f9SUWG6VFIKyRF0pCSmI/IhI4AwYSnYmzyGWM8Ho6EfKT0JKrAzRhrwvjRfYwlySZpjOHddo5CyId1jxB2u4eGTjahsYE1uAoeE+c2RGlqvzdySQy1QaltgyyvGZg8mice6bdzTczN2VOu3LfgTomJ17UOa1jdZdeNmny6lttGPrdsOIQNjgVUVpcGbUufjac9jC9fyNwnSvLlR9VLtNdy9x0bOZD///D5UxZkFC+JERSKbd1w92hHqUtoqJ1k+56tA69eEcUpI9nCmjCn3Kzfr2RI126x1+PTYEx1cBFcgNMJntCymJ4CEdimOfbA==}
+  source: /runtime/services/google.yml
 startup_form: Form1
+uplink_visible: true
