@@ -1,4 +1,10 @@
 allow_embedding: false
+db_schema:
+  newsletters:
+    client: none
+    columns: []
+    server: full
+    title: newsletters
 dependencies: []
 name: My Market Newsletter
 package_name: My_Market_Newsletter
@@ -27,7 +33,7 @@ secrets:
     value: {QIJEZKVHNSW4TLRE: BqZN2VKYzRjepOfukN/w6gdFgOVqoDZ2OY0qlOvNCFj5UHb+5dkIaon6v6fa8CEUMdvxFDKQyv2l1fA7H+QJyxM05Rz4/vZtDFyxSA3wvQ+/kzC9id/vhBv8/YiFj+FV/DaDq9RTTWCYgZ31YzsV3ri6gHQ=}
 services:
 - client_config: {}
-  server_config: {}
+  server_config: {auto_create_missing_columns: true}
   source: /runtime/services/tables.yml
 - client_config: {}
   server_config: {}

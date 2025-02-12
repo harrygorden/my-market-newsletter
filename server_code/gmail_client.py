@@ -32,6 +32,8 @@ def get_gmail_service():
     Creates and returns an authenticated Gmail service using our OAuth credentials from Anvil secrets.
     """
     try:
+        print("Starting Gmail service creation...")
+        print("Getting credentials from Anvil secrets...")
         creds = Credentials(
             token=None,
             refresh_token=anvil.secrets.get_secret('google_refresh_token'),
@@ -40,8 +42,12 @@ def get_gmail_service():
             token_uri='https://oauth2.googleapis.com/token',
             scopes=['https://www.googleapis.com/auth/gmail.readonly']
         )
+        print("Refreshing credentials...")
         creds.refresh(Request())
-        return build('gmail', 'v1', credentials=creds)
+        print("Building Gmail service...")
+        service = build('gmail', 'v1', credentials=creds)
+        print("Gmail service created successfully")
+        return service
     except Exception as e:
         print(f"Error creating Gmail service: {str(e)}")
         raise
@@ -54,11 +60,15 @@ def _get_latest_newsletter():
         sender_email = anvil.secrets.get_secret('newsletter_sender_email')
         print(f"Looking for emails from: {sender_email}")
 
+        print("Getting Gmail service...")
         service = get_gmail_service()
+        print("Gmail service obtained, executing search query...")
 
-        # Search for the most recent email from the sender
-        query = f"from:{sender_email}"
+        # Search for the most recent email from the sender within last 24 hours
+        query = f"from:{sender_email} newer_than:1d"
+        print(f"Executing Gmail API query: {query}")
         results = service.users().messages().list(userId='me', q=query, maxResults=1).execute()
+        print("Search query completed")
 
         messages = results.get('messages', [])
         if not messages:

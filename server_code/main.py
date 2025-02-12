@@ -7,11 +7,14 @@ parses its contents, and then stores both raw and parsed data into Anvil Data Ta
 """
 
 import logging
+from datetime import datetime
+import anvil.server
 from gmail_client import get_latest_newsletter
 from email_parser import parse_email
 from db_access import newsletter_exists, insert_newsletter, insert_parsed_sections
 
 
+@anvil.server.callable
 def process_newsletter():
     try:
         # Retrieve the latest newsletter email
@@ -20,7 +23,9 @@ def process_newsletter():
             logging.info("No newsletter email found.")
             return
 
-        newsletter_id = newsletter.get("received_date")  # using the received_date as the identifier
+        # Convert the ISO format date to YYYYMMDD format
+        received_date = datetime.fromisoformat(newsletter.get("received_date"))
+        newsletter_id = received_date.strftime("%Y%m%d")
 
         # Skip if this newsletter has already been processed
         if newsletter_exists(newsletter_id):
