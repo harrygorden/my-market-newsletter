@@ -6,7 +6,4 @@ unique_ids:
     Form1: C5DOJO7Y73QQCEM22ENGFMFQYDKKHEDN
   modules: {}
   scripts: {}
-  server_modules:
-    GetNewsletter: '1739337771693521092946651.28033'
-    Main: '1739337760106532490521354.9318'
-    ServerModule1: '1739337785328152994861647.8769'
+  server_modules: {}

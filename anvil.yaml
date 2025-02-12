@@ -9,6 +9,22 @@ runtime_options:
   server_version: python3-sandbox
   version: 2
 scheduled_tasks: []
+secrets:
+  google_client_id:
+    type: secret
+    value: {QIJEZKVHNSW4TLRE: EtB1W70rUgL+uBsVXzEWdeBYMOROYUmOA2x+R+zl8WY+JCsHiZRRenFZH8nwR6IQVnMJvPePkr3FyAUP84kVi8IKe3bhvBQjZwLkPHboBxoPcdtgYbfv17tNfk50fLEXbmLjqwgq+aj2t/QxevMriwffwWi1vXXGx4jiU3f6MYZZjTQI+vktbymWD/ZFmhlR3GfBVep4DWMgfS/1vjCc2CwK+5DrGPg=}
+  google_client_secret:
+    type: secret
+    value: {QIJEZKVHNSW4TLRE: YTKw83Vsxo/z4E7VKsSAmKadDYrC8NiyQAfllShd+nnr+bDjzsdX4MVYxp8xS28GKjFOouMCOsfAhd9nbCzkfdUWu1WSM4mE9AJlIdyD0fAG7SVOSk5Eu+IFhPsN1OLTr3Piy+hORw04LEW3CbPh0ykmrzWO6KbKctdA/nU12k+9vw==}
+  google_refresh_token:
+    type: secret
+    value: {QIJEZKVHNSW4TLRE: I6GR5W9Gcym9vN8oZXjnf97bv2xV2AnH7eyCEwlvNd/0ugywNkJMvkEu8ot4vTARaULcASZG/9llbiacMvjVy1DR2OblWhE2cfS1Vqa1/zweqXO88rxrd9/vv/k99YY2H2WrE76vYz6ZQ0z6Ij/h9mbOueiLgjGgCb8A9oYpha7dLhzSx1vExdZcNacg+HIJRRlmih17fgXjnuqf3UweGlKHIKJm9HSCDV4CVVERjBDX5MLY3CS33MFPXWBb77CL6SGSQLBNYMI=}
+  newsletter_sender_email:
+    type: secret
+    value: {QIJEZKVHNSW4TLRE: sl6TyIvdhC/737UeMou8zZoormKG/X5/T4CVE8alr2/mxMARoUwd9gPnyo8H/OYQHkwNfHw1FkxRJJXLQYr1J+qk8w0Rb/W3c0r07a0n4QzEJDdd/68HPM7Qg2JK1z334yLiale67/Mw7AxvLdt7/TK9ykdnkug8BBc=}
+  recipient_email:
+    type: secret
+    value: {QIJEZKVHNSW4TLRE: BqZN2VKYzRjepOfukN/w6gdFgOVqoDZ2OY0qlOvNCFj5UHb+5dkIaon6v6fa8CEUMdvxFDKQyv2l1fA7H+QJyxM05Rz4/vZtDFyxSA3wvQ+/kzC9id/vhBv8/YiFj+FV/DaDq9RTTWCYgZ31YzsV3ri6gHQ=}
 services:
 - client_config: {}
   server_config: {}
