@@ -96,7 +96,7 @@ def _get_latest_newsletter():
         print("Error retrieving newsletter: " + str(e))
         raise
 
-
+@anvil.server.callable
 def get_latest_newsletter():
     """
     Retrieves the latest newsletter email from Gmail.
