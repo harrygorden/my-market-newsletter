@@ -40,25 +40,25 @@ db_schema:
   parsed_sections:
     client: none
     columns:
-    - admin_ui: {width: 200}
+    - admin_ui: {order: 0, width: 108}
       name: newsletter_id
       type: string
-    - admin_ui: {width: 200}
+    - admin_ui: {order: 1, width: 334}
       name: market_summary
       type: string
     - admin_ui: {width: 200}
       name: key_levels
       type: string
-    - admin_ui: {width: 200}
+    - admin_ui: {order: 3, width: 133}
       name: key_levels_raw
       type: string
-    - admin_ui: {width: 200}
+    - admin_ui: {order: 4, width: 315}
       name: trading_plan
       type: string
-    - admin_ui: {width: 200}
+    - admin_ui: {order: 5, width: 322}
       name: plan_summary
       type: string
-    - admin_ui: {width: 200}
+    - admin_ui: {order: 6, width: 132}
       name: summary
       type: string
     server: full
