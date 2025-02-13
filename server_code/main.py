@@ -103,7 +103,6 @@ def delete_most_recent_records():
         print(f"Error in delete_most_recent_records: {str(e)}")
         raise
 
-
 if __name__ == "__main__":
     # This callable function runs through the entire process.
     process_newsletter() 
