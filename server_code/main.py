@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 import anvil.server
 from gmail_client import get_latest_newsletter
-from email_parser import parse_email
+from email_parser import parse_email, clean_newsletter
 from db_access import (
     newsletter_exists, 
     insert_newsletter, 
@@ -45,15 +45,23 @@ def process_newsletter():
             return
         print("Newsletter is new, proceeding with processing")
 
-        # Parse the raw email to extract key sections and a summary
+        # Clean the newsletter content first
+        print("Cleaning newsletter content...")
+        cleaned_body = clean_newsletter(newsletter.get("raw_body"))
+        print(f"Cleaned body length: {len(cleaned_body)}")
+        print(f"First 100 characters of cleaned body: {cleaned_body[:100]}")
+        print("Newsletter cleaning completed")
+
+        # Parse the cleaned email to extract key sections and a summary
         print("Parsing email content...")
-        parsed_data = parse_email(newsletter.get("raw_body"))
+        parsed_data = parse_email(cleaned_body)
         print("Email parsing completed")
 
-        # Save the raw newsletter data
-        print("Saving raw newsletter data...")
+        # Save the newsletter data with both raw and cleaned content
+        print("Saving newsletter data...")
+        newsletter["cleaned_body"] = cleaned_body
         insert_newsletter(newsletter_id, newsletter)
-        print("Raw newsletter data saved successfully")
+        print("Newsletter data saved successfully")
 
         # Save the parsed sections and summary
         print("Saving parsed sections...")

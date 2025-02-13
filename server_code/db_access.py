@@ -16,6 +16,28 @@ def newsletter_exists(newsletter_id: str) -> bool:
     return result is not None
 
 
+def update_newsletter_cleaned_body(newsletter_id: str, cleaned_body: str, raw_body: str = None) -> None:
+    """
+    Updates the cleaned_body field of an existing newsletter or creates a new one if it doesn't exist.
+    
+    Args:
+        newsletter_id (str): The unique identifier of the newsletter
+        cleaned_body (str): The cleaned text content to save
+        raw_body (str, optional): The raw body text, only used if creating a new record
+    """
+    newsletter = app_tables.newsletters.get(newsletter_id=newsletter_id)
+    if newsletter:
+        # Update only the cleaned_body field
+        newsletter['cleaned_body'] = cleaned_body
+    else:
+        # If record doesn't exist, create new with minimal data
+        app_tables.newsletters.add_row(
+            newsletter_id=newsletter_id,
+            raw_body=raw_body,
+            cleaned_body=cleaned_body
+        )
+
+
 def insert_newsletter(newsletter_id: str, newsletter: dict) -> None:
     # Inserts the raw newsletter data into the 'newsletters' Data Table.
     app_tables.newsletters.add_row(

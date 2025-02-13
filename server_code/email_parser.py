@@ -1,102 +1,225 @@
 import anvil.tables as tables
 import anvil.tables.query as q
 from anvil.tables import app_tables
+from . import db_access
 import re
 import spacy
-#!/usr/bin/env python3
+
 """
 email_parser.py
-Updated to use spaCy for cleaning the email text (stored in newsletters.clean_body)
-and improving section extraction for the parsed_sections table.
+
+This module handles the cleaning and parsing of newsletter emails. The cleaning process
+follows these specific steps:
+
+1. Initial Setup:
+   - Adds "Market Summary" section at the beginning of the document
+   - Removes email client headers (e.g., "View this email in browser")
+
+2. Footer Removal:
+   - Identifies and removes footer content by looking for markers like:
+     * "Unsubscribe"
+     * "Manage your subscription"
+     * "You received this email"
+   - Keeps only content before the first footer marker
+
+3. Text Cleanup:
+   - Standardizes line breaks (max 2 consecutive newlines)
+   - Removes excessive whitespace and tabs
+   - Removes decorative markers (sequences of *, -, =)
+   - Standardizes paragraph spacing
+
+4. Section Marking:
+   - Wraps the following sections with <SECTION> tags:
+     * Market Summary (added at start)
+     * Market Commentary:
+     * Key Signals:
+     * Trading Plan:
+     * Core Structures/Levels To Engage
+     * In summary for tomorrow:
+     * Trade Recap/Education
+     * Important Housekeeping Notices
+     * Closing (added before final two lines)
+   
+   - Special handling for "Trade Plan {Weekday}" headers:
+     * Matches exact pattern "Trade Plan" followed by a weekday
+     * Preserves the weekday in the section tag
+     * Adds proper spacing around the section
+
+5. Final Formatting:
+   - Ensures consistent newline spacing between sections
+   - Strips any trailing whitespace
+   - Maintains proper paragraph structure throughout
+
+The module also includes functionality to parse the cleaned text into structured data
+for storage in Anvil Data Tables.
 """
 
-# Load the spaCy model at module-level (for caching reasons)
 try:
-    import en_core_web_sm
-    nlp = en_core_web_sm.load()
-except Exception as e:
-    print("Error loading spaCy model en_core_web_sm:", e)
+    nlp = spacy.load("en_core_web_sm")
+except Exception:
     nlp = None
-
 
 def clean_newsletter(raw_body: str) -> str:
     """
-    Clean and optimize raw newsletter text using spaCy and regex.
-    Normalizes whitespace and reassembles sentences.
-    """
-    # Normalize whitespace with regex
-    cleaned = re.sub(r'\s+', ' ', raw_body).strip()
+    Cleans the raw newsletter text.
     
-    # If spaCy is available, use it to segment and rebuild sentences
-    if nlp:
-        doc = nlp(cleaned)
-        # Reassemble text from sentences to ensure proper spacing and punctuation.
-        cleaned = " ".join([sent.text.strip() for sent in doc.sents])
-    return cleaned
-
+    Args:
+        raw_body (str): The raw text content of the newsletter
+        
+    Returns:
+        str: The cleaned newsletter text
+        
+    Cleaning steps:
+        - Removes header content (e.g., "View this email in browser")
+        - Removes footer content (e.g., unsubscribe links)
+        - Removes decorative markers and excessive whitespace
+        - Standardizes paragraph spacing
+        - Wraps section headers in semantic markers
+    """
+    if not raw_body:
+        return ""
+    
+    print(f"Original text length: {len(raw_body)}")
+    print(f"First 100 chars of original: {raw_body[:100]}")
+        
+    # Remove header lines (common email client additions)
+    cleaned = re.sub(r'^.*?View (this|the) (email|post) (in|on).*?\n', '', raw_body, 
+                    flags=re.IGNORECASE | re.MULTILINE)
+    print(f"After header removal length: {len(cleaned)}")
+    
+    # Add Market Summary at the beginning with SECTION tags
+    cleaned = "\n\n<SECTION>Market Summary</SECTION>\n\n" + cleaned.lstrip()
+    print("Added Market Summary header with section tags")
+    
+    # Add Closing section at the beginning too
+    cleaned = cleaned + "\n\n<SECTION>Closing</SECTION>\n\n"
+    print("Added Closing section with section tags")
+    
+    # Find the position of the first footer marker
+    footer_markers = ['Unsubscribe', 'Manage your subscription', 'You received this email']
+    footer_pos = len(cleaned)
+    for marker in footer_markers:
+        pos = cleaned.lower().find(marker.lower())
+        if pos != -1 and pos < footer_pos:
+            footer_pos = pos
+    
+    # Only keep content before the footer
+    if footer_pos < len(cleaned):
+        cleaned = cleaned[:footer_pos].strip()
+    print(f"After footer removal length: {len(cleaned)}")
+    print(f"Content after footer removal (first 100 chars): {cleaned[:100]}")
+    
+    # Remove excessive line breaks and whitespace, but preserve paragraph structure
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+    cleaned = re.sub(r'[ \t]+', ' ', cleaned)
+    print(f"After whitespace cleanup length: {len(cleaned)}")
+    
+    # Remove decorative markers, but be more specific
+    cleaned = re.sub(r'[=\-*]{3,}[\n\s]*', '\n\n', cleaned)
+    print(f"After marker removal length: {len(cleaned)}")
+    
+    # Split into paragraphs and rejoin with standardized spacing
+    paragraphs = [p.strip() for p in re.split(r'\n\s*\n', cleaned) if p.strip()]
+    cleaned = '\n\n'.join(paragraphs)
+    print(f"After paragraph standardization length: {len(cleaned)}")
+    
+    # Mark section headers for better parsing
+    section_headers = [
+        'Market Commentary:',
+        'Key Signals:',
+        'Trading Plan:',
+        'Core Structures/Levels To Engage',
+        'In summary for tomorrow:',
+        'Trade Recap/Education',
+        'Important Housekeeping Notices'
+    ]
+    
+    for header in section_headers:
+        # First remove any excess newlines around the header
+        cleaned = re.sub(
+            f'\n{{2,}}{re.escape(header)}\n{{2,}}',
+            f'\n\n{header}\n\n',
+            cleaned
+        )
+        # Then wrap in section tags with exactly two newlines before and after
+        cleaned = re.sub(
+            f'([^\n])\n{{0,2}}{re.escape(header)}',
+            r'\1\n\n<SECTION>' + header,
+            cleaned
+        )
+        cleaned = re.sub(
+            f'{re.escape(header)}\n{{0,2}}([^\n])',
+            header + r'</SECTION>\n\n\1',
+            cleaned
+        )
+        cleaned = re.sub(
+            f'{re.escape(header)}$',
+            header + r'</SECTION>\n\n',
+            cleaned
+        )
+    
+    # Handle Trade Plan sections with the same spacing
+    weekdays = r'(?:Monday|Tuesday|Wednesday|Thursday|Friday)'
+    trade_plan_pattern = r'^\s*Trade\s+Plan\s+(' + weekdays + r')\s*$'
+    
+    # Debug print to see what we're looking for
+    print("Looking for Trade Plan pattern:", trade_plan_pattern)
+    
+    # Find all matches first to debug
+    matches = re.finditer(trade_plan_pattern, cleaned, flags=re.MULTILINE)
+    for match in matches:
+        print(f"Found Trade Plan match: '{match.group(0)}' at position {match.start()}")
+    
+    # Apply the substitution with exactly two newlines
+    cleaned = re.sub(
+        trade_plan_pattern,
+        r'\n\n<SECTION>Trade Plan \1</SECTION>\n\n',
+        cleaned,
+        flags=re.MULTILINE
+    )
+    
+    # Final cleanup of any remaining multiple newlines
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+    
+    # Debug print to check if any Trade Plan lines remain unwrapped
+    for line in cleaned.split('\n'):
+        if 'Trade Plan' in line and '<SECTION>' not in line:
+            print(f"WARNING: Unwrapped Trade Plan line found: '{line}'")
+    
+    final_text = cleaned.strip()
+    print(f"Final cleaned text length: {len(final_text)}")
+    print(f"Final text preview: {final_text[:200]}")
+    
+    return final_text
 
 def parse_email(raw_body: str) -> dict:
-    """
-    Parses the raw newsletter email.
-    This function cleans the raw text and then extracts sections via regex.
-    The cleaning process uses spaCy for sentence segmentation.
-    
-    Returns a dictionary with the following keys:
-      - cleaned_body : the optimized version of raw_body (to be stored in the newsletters table)
-      - MarketSummary: extracted text following "Market Commentary:"
-      - KeyLevels and KeyLevelsRaw: extracted text following "Key Signals:"
-      - TradingPlan: extracted text following "Trading Plan:"
-      - PlanSummary: the first sentence of the trading plan (using spaCy if available)
-      - summary: a combined abbreviated summary of the Market Commentary and Trading Plan
-    """
-    # Clean the text
-    cleaned_body = clean_newsletter(raw_body)
-    parsed = {"cleaned_body": cleaned_body}
+    parsed = {}
 
-    # Extract "Market Commentary" section.
-    market_match = re.search(
-        r"Market Commentary:\s*(.*?)(?=Key Signals:|Trading Plan:|$)",
-        cleaned_body,
-        re.DOTALL | re.IGNORECASE
-    )
-    market_text = market_match.group(1).strip() if market_match else ""
-    parsed["MarketSummary"] = market_text
+    # Extract "Market Commentary"
+    market_commentary_match = re.search(r"Market Commentary:\s*(.*?)(?:\n{2,}|$)", raw_body, re.DOTALL)
+    parsed["MarketSummary"] = market_commentary_match.group(1).strip() if market_commentary_match else ""
 
-    # Extract "Key Signals" section.
-    key_signals_match = re.search(
-        r"Key Signals:\s*(.*?)(?=Trading Plan:|Market Commentary:|$)",
-        cleaned_body,
-        re.DOTALL | re.IGNORECASE
-    )
+    # Extract "Key Signals" (used for KeyLevels and KeyLevelsRaw)
+    key_signals_match = re.search(r"Key Signals:\s*(.*?)(?:\n{2,}|$)", raw_body, re.DOTALL)
     key_signals_text = key_signals_match.group(1).strip() if key_signals_match else ""
     parsed["KeyLevels"] = key_signals_text
     parsed["KeyLevelsRaw"] = key_signals_text
 
-    # Extract "Trading Plan" section.
-    trading_plan_match = re.search(
-        r"Trading Plan:\s*(.*)",
-        cleaned_body,
-        re.DOTALL | re.IGNORECASE
-    )
+    # Extract "Trading Plan"
+    trading_plan_match = re.search(r"Trading Plan:\s*(.*?)(?:\n{2,}|$)", raw_body, re.DOTALL)
     trading_plan_text = trading_plan_match.group(1).strip() if trading_plan_match else ""
     parsed["TradingPlan"] = trading_plan_text
 
-    # Create a Plan Summary using spaCy sentence segmentation (fallback to regex if not available)
+    # Create a Plan Summary (e.g., the first sentence of the trading plan)
     if trading_plan_text:
-        if nlp:
-            doc = nlp(trading_plan_text)
-            sentences = [sent.text.strip() for sent in doc.sents if sent.text.strip()]
-            plan_summary = sentences[0] if sentences else ""
-        else:
-            sentences = re.split(r'\.\s+', trading_plan_text)
-            plan_summary = sentences[0] if sentences else ""
-        parsed["PlanSummary"] = plan_summary
+        sentences = re.split(r'\.\s+', trading_plan_text)
+        parsed["PlanSummary"] = sentences[0] if sentences else ""
     else:
         parsed["PlanSummary"] = ""
 
-    # Generate an abbreviated summary combining key insights from Market Commentary and Trading Plan.
-    market_excerpt = (market_text[:50] + "...") if len(market_text) > 50 else market_text
-    plan_excerpt = (trading_plan_text[:50] + "...") if len(trading_plan_text) > 50 else trading_plan_text
+    # Generate an abbreviated summary combining key insights
+    market_excerpt = parsed["MarketSummary"][:50] + "..." if len(parsed["MarketSummary"]) > 50 else parsed["MarketSummary"]
+    plan_excerpt = parsed["TradingPlan"][:50] + "..." if len(parsed["TradingPlan"]) > 50 else parsed["TradingPlan"]
     parsed["summary"] = f"{market_excerpt} | {plan_excerpt}"
 
     return parsed 
