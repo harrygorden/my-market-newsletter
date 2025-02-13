@@ -11,40 +11,89 @@ from datetime import datetime
 import anvil.server
 from gmail_client import get_latest_newsletter
 from email_parser import parse_email
-from db_access import newsletter_exists, insert_newsletter, insert_parsed_sections
+from db_access import (
+    newsletter_exists, 
+    insert_newsletter, 
+    insert_parsed_sections,
+    delete_most_recent_records as db_delete_most_recent
+)
+from anvil.tables import app_tables
 
 
 @anvil.server.callable
 def process_newsletter():
     try:
+        print("=== Starting process_newsletter ===")
         # Retrieve the latest newsletter email
+        print("Calling get_latest_newsletter...")
         newsletter = get_latest_newsletter()
         if not newsletter:
-            logging.info("No newsletter email found.")
+            print("No newsletter email found.")
             return
+        print(f"Newsletter retrieved with subject: {newsletter.get('subject')}")
 
         # Convert the ISO format date to YYYYMMDD format
+        print("Converting date format...")
         received_date = datetime.fromisoformat(newsletter.get("received_date"))
         newsletter_id = received_date.strftime("%Y%m%d")
+        print(f"Generated newsletter_id: {newsletter_id}")
 
         # Skip if this newsletter has already been processed
+        print("Checking for existing newsletter...")
         if newsletter_exists(newsletter_id):
-            logging.info(f"Newsletter '{newsletter_id}' already processed. Skipping.")
+            print(f"Newsletter '{newsletter_id}' already processed. Skipping.")
             return
+        print("Newsletter is new, proceeding with processing")
 
         # Parse the raw email to extract key sections and a summary
+        print("Parsing email content...")
         parsed_data = parse_email(newsletter.get("raw_body"))
+        print("Email parsing completed")
 
         # Save the raw newsletter data
+        print("Saving raw newsletter data...")
         insert_newsletter(newsletter_id, newsletter)
+        print("Raw newsletter data saved successfully")
 
         # Save the parsed sections and summary
+        print("Saving parsed sections...")
         insert_parsed_sections(newsletter_id, parsed_data)
+        print("Parsed sections saved successfully")
 
-        logging.info("Newsletter processed successfully.")
+        print("Newsletter processed successfully.")
+        print("=== process_newsletter completed ===")
 
     except Exception as e:
-        logging.error(f"Error processing newsletter: {e}")
+        print(f"Error processing newsletter: {str(e)}")
+        print(f"Error type: {type(e)}")
+        print(f"Error details: {str(e.__dict__)}")
+        raise
+
+
+@anvil.server.callable
+def delete_most_recent_records():
+    """
+    Deletes the most recent newsletter and its corresponding parsed sections.
+    Returns the deleted newsletter_id or None if no records found.
+    """
+    try:
+        print("=== Starting deletion of most recent records ===")
+        
+        newsletter_id, error = db_delete_most_recent()
+        
+        if error:
+            print(error)
+            return None
+            
+        if newsletter_id:
+            print(f"Successfully deleted newsletter {newsletter_id} and its parsed sections")
+        
+        print("=== Deletion completed successfully ===")
+        return newsletter_id
+        
+    except Exception as e:
+        print(f"Error in delete_most_recent_records: {str(e)}")
+        raise
 
 
 if __name__ == "__main__":

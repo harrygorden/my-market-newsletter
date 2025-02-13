@@ -2,9 +2,50 @@ allow_embedding: false
 db_schema:
   newsletters:
     client: none
-    columns: []
+    columns:
+    - admin_ui: {order: 0, width: 200}
+      name: newsletter_id
+      type: string
+    - admin_ui: {order: 2, width: 200}
+      name: subject
+      type: string
+    - admin_ui: {order: 3, width: 200}
+      name: raw_body
+      type: string
+    - admin_ui: {order: 4, width: 200}
+      name: cleaned_body
+      type: string
+    - admin_ui: {order: 1, width: 200}
+      name: received_date
+      type: string
     server: full
     title: newsletters
+  parsed_sections:
+    client: none
+    columns:
+    - admin_ui: {order: 0, width: 200}
+      name: newsletter_id
+      type: string
+    - admin_ui: {order: 1, width: 200}
+      name: market_summary
+      type: string
+    - admin_ui: {order: 2, width: 200}
+      name: key_levels
+      type: string
+    - admin_ui: {order: 3, width: 200}
+      name: key_levels_raw
+      type: string
+    - admin_ui: {order: 4, width: 200}
+      name: trading_plan
+      type: string
+    - admin_ui: {order: 5, width: 200}
+      name: plan_summary
+      type: string
+    - admin_ui: {order: 6, width: 200}
+      name: summary
+      type: string
+    server: full
+    title: parsed_sections
 dependencies: []
 name: My Market Newsletter
 package_name: My_Market_Newsletter
