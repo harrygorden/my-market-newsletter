@@ -20,6 +20,7 @@ from db_access import (
 from anvil.tables import app_tables
 
 
+@anvil.server.background_task
 @anvil.server.callable
 def process_newsletter():
     try:
@@ -104,5 +105,5 @@ def delete_most_recent_records():
         raise
 
 if __name__ == "__main__":
-    # This callable function runs through the entire process.
-    process_newsletter() 
+    # Launch the newsletter processing as a background task
+    task = anvil.server.launch_background_task('process_newsletter') 

@@ -74,9 +74,33 @@ runtime_options:
   version: 2
 scheduled_tasks:
 - job_id: EHAZDCPK
-  task_name: process_newsletter()
+  task_name: process_newsletter
   time_spec:
     at: {day: 2, hour: 23, minute: 0}
+    every: week
+    n: 1
+- job_id: GXWEEWZE
+  task_name: process_newsletter
+  time_spec:
+    at: {day: 3, hour: 23, minute: 0}
+    every: week
+    n: 1
+- job_id: AYEYTVAN
+  task_name: process_newsletter
+  time_spec:
+    at: {day: 4, hour: 23, minute: 0}
+    every: week
+    n: 1
+- job_id: PTUZEXVG
+  task_name: process_newsletter
+  time_spec:
+    at: {day: 5, hour: 23, minute: 0}
+    every: week
+    n: 1
+- job_id: AWAUDQKX
+  task_name: process_newsletter
+  time_spec:
+    at: {day: 6, hour: 23, minute: 0}
     every: week
     n: 1
 secrets:
