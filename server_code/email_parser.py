@@ -195,31 +195,63 @@ def clean_newsletter(raw_body: str) -> str:
 def parse_email(raw_body: str) -> dict:
     parsed = {}
 
-    # Extract "Market Commentary"
-    market_commentary_match = re.search(r"Market Commentary:\s*(.*?)(?:\n{2,}|$)", raw_body, re.DOTALL)
-    parsed["MarketSummary"] = market_commentary_match.group(1).strip() if market_commentary_match else ""
+    # Extract Market Summary section
+    market_summary_match = re.search(r'<SECTION>Market Summary</SECTION>\s*(.*?)(?=<SECTION>|$)', raw_body, re.DOTALL)
+    parsed["MarketSummary"] = market_summary_match.group(1).strip() if market_summary_match else ""
 
-    # Extract "Key Signals" (used for KeyLevels and KeyLevelsRaw)
-    key_signals_match = re.search(r"Key Signals:\s*(.*?)(?:\n{2,}|$)", raw_body, re.DOTALL)
-    key_signals_text = key_signals_match.group(1).strip() if key_signals_match else ""
-    parsed["KeyLevels"] = key_signals_text
-    parsed["KeyLevelsRaw"] = key_signals_text
-
-    # Extract "Trading Plan"
-    trading_plan_match = re.search(r"Trading Plan:\s*(.*?)(?:\n{2,}|$)", raw_body, re.DOTALL)
-    trading_plan_text = trading_plan_match.group(1).strip() if trading_plan_match else ""
-    parsed["TradingPlan"] = trading_plan_text
-
-    # Create a Plan Summary (e.g., the first sentence of the trading plan)
-    if trading_plan_text:
-        sentences = re.split(r'\.\s+', trading_plan_text)
-        parsed["PlanSummary"] = sentences[0] if sentences else ""
+    # Extract Core Structures/Levels section and process numbers
+    levels_match = re.search(r'<SECTION>Core Structures/Levels To Engage</SECTION>\s*(.*?)(?=<SECTION>|$)', raw_body, re.DOTALL)
+    if levels_match:
+        levels_text = levels_match.group(1)
+        # Extract lines starting with numbers followed by colon
+        key_levels = []
+        key_levels_raw = []
+        for line in levels_text.split('\n'):
+            if match := re.match(r'(\d+(?:\.\d+)?)\s*:', line):
+                key_levels.append(line.strip())
+                key_levels_raw.append(float(match.group(1)))  # Convert to float for proper numeric sorting
+        # Sort key_levels_raw in descending order and convert back to strings
+        key_levels_raw.sort(reverse=True)
+        parsed["KeyLevels"] = '\n'.join(key_levels)
+        # Convert to int if the float has no decimal places, otherwise keep the float
+        parsed["KeyLevelsRaw"] = '\n'.join(str(int(num)) if num.is_integer() else str(num) for num in key_levels_raw)
     else:
-        parsed["PlanSummary"] = ""
+        parsed["KeyLevels"] = ""
+        parsed["KeyLevelsRaw"] = ""
 
-    # Generate an abbreviated summary combining key insights
-    market_excerpt = parsed["MarketSummary"][:50] + "..." if len(parsed["MarketSummary"]) > 50 else parsed["MarketSummary"]
-    plan_excerpt = parsed["TradingPlan"][:50] + "..." if len(parsed["TradingPlan"]) > 50 else parsed["TradingPlan"]
-    parsed["summary"] = f"{market_excerpt} | {plan_excerpt}"
+    # Extract Trading Plan section
+    trading_plan_match = re.search(r'<SECTION>Trade Plan \w+</SECTION>\s*(.*?)(?=<SECTION>|$)', raw_body, re.DOTALL)
+    parsed["TradingPlan"] = trading_plan_match.group(1).strip() if trading_plan_match else ""
+
+    # Extract Plan Summary (single line after "In summary for tomorrow:")
+    summary_match = re.search(r'<SECTION>In summary for tomorrow:</SECTION>\s*([^\n]+)', raw_body)
+    summary_text = summary_match.group(1).strip() if summary_match else ""
+    parsed["PlanSummary"] = summary_text
+
+    # Create combined summary with all sections
+    summary_parts = []
+    
+    # Key Levels Raw
+    summary_parts.append("KEY LEVELS RAW")
+    summary_parts.append(parsed["KeyLevelsRaw"])
+    
+    # Key Levels
+    summary_parts.append("\nKEY LEVELS DETAIL")
+    summary_parts.append(parsed["KeyLevels"])
+    
+    # Market Summary
+    summary_parts.append("\nMARKET SUMMARY")
+    summary_parts.append(parsed["MarketSummary"])
+    
+    # Trading Plan
+    summary_parts.append("\nTRADING PLAN")
+    summary_parts.append(parsed["TradingPlan"])
+    
+    # Plan Summary
+    summary_parts.append("\nPLAN SUMMARY")
+    summary_parts.append(parsed["PlanSummary"])
+    
+    # Join all parts with a newline
+    parsed["summary"] = '\n\n'.join(part for part in summary_parts if part)
 
     return parsed 
