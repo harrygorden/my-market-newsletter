@@ -20,6 +20,7 @@ from db_access import (
     delete_most_recent_records as db_delete_most_recent
 )
 from market_calendar import update_upcoming_events
+from send_summary import send_summary_email
 
 
 @anvil.server.background_task
@@ -75,6 +76,11 @@ def process_newsletter():
         print("Updating upcoming events...")
         update_upcoming_events(newsletter_id)
         print("Upcoming events updated successfully")
+
+        # After successfully processing the newsletter
+        print("Sending summary email...")
+        send_summary_email()
+        print("Summary email sent successfully")
 
         print("Newsletter processed successfully.")
         print("=== process_newsletter completed ===")

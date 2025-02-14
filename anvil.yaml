@@ -119,6 +119,9 @@ secrets:
   newsletter_sender_email:
     type: secret
     value: {QIJEZKVHNSW4TLRE: sl6TyIvdhC/737UeMou8zZoormKG/X5/T4CVE8alr2/mxMARoUwd9gPnyo8H/OYQHkwNfHw1FkxRJJXLQYr1J+qk8w0Rb/W3c0r07a0n4QzEJDdd/68HPM7Qg2JK1z334yLiale67/Mw7AxvLdt7/TK9ykdnkug8BBc=}
+  recipient_bcc:
+    type: secret
+    value: {QIJEZKVHNSW4TLRE: F5qjIOgN0nNB4KJKD6ytrfBPRysManf+58h3NXpmFaLz4ZpiOiRalfS+/BMRJyvqgP2Gc5LFFBHqdwWxrzrnIrn3QwHiLnP7ApcRGcHWam4vmVaBJOXmFUCIAgyKAGbDlNS0WUdY0XCcVcM9aocY87l5ALLPEqM=}
   recipient_email:
     type: secret
     value: {QIJEZKVHNSW4TLRE: BqZN2VKYzRjepOfukN/w6gdFgOVqoDZ2OY0qlOvNCFj5UHb+5dkIaon6v6fa8CEUMdvxFDKQyv2l1fA7H+QJyxM05Rz4/vZtDFyxSA3wvQ+/kzC9id/vhBv8/YiFj+FV/DaDq9RTTWCYgZ31YzsV3ri6gHQ=}
