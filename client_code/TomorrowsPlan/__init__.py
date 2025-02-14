@@ -13,4 +13,12 @@ class TomorrowsPlan(TomorrowsPlanTemplate):
     # Set Form properties and Data Bindings.
     self.init_components(**properties)
 
+    # Call server function to get data
+    data = anvil.server.call('print_data_to_form')
+    
+    # Update the rich text boxes with the data
+    self.rich_text_summary.content = data['summary']
+    self.rich_text_timing_detail.content = data['timing_detail']
+    self.rich_text_upcoming_events.content = data['upcoming_events']
+
     # Any code you write here will run before the form opens.

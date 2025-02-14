@@ -9,6 +9,8 @@ parses its contents, and then stores both raw and parsed data into Anvil Data Ta
 import logging
 from datetime import datetime
 import anvil.server
+import anvil.tables as tables
+from anvil.tables import app_tables
 from gmail_client import get_latest_newsletter
 from email_parser import parse_email, clean_newsletter
 from db_access import (
@@ -17,7 +19,7 @@ from db_access import (
     insert_parsed_sections,
     delete_most_recent_records as db_delete_most_recent
 )
-from anvil.tables import app_tables
+from market_calendar import update_upcoming_events
 
 
 @anvil.server.background_task
@@ -68,6 +70,11 @@ def process_newsletter():
         print("Saving parsed sections...")
         insert_parsed_sections(newsletter_id, parsed_data)
         print("Parsed sections saved successfully")
+        
+        # Update upcoming events
+        print("Updating upcoming events...")
+        update_upcoming_events(newsletter_id)
+        print("Upcoming events updated successfully")
 
         print("Newsletter processed successfully.")
         print("=== process_newsletter completed ===")
@@ -103,6 +110,27 @@ def delete_most_recent_records():
     except Exception as e:
         print(f"Error in delete_most_recent_records: {str(e)}")
         raise
+
+
+@anvil.server.callable
+def print_data_to_form():
+    # Get the most recent summary from parsed_sections table
+    latest_sections = app_tables.parsed_sections.search(
+        tables.order_by("newsletter_id", ascending=False)
+    )
+    
+    if latest_sections:
+        latest = latest_sections[0]
+        return {
+            'summary': latest['summary'],
+            'timing_detail': latest['timing_detail'],
+            'upcoming_events': latest['upcoming_events']
+        }
+    return {
+        'summary': "No summary available",
+        'timing_detail': "No timing information available",
+        'upcoming_events': "No upcoming events available"
+    }
 
 if __name__ == "__main__":
     # Launch the newsletter processing as a background task

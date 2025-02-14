@@ -58,7 +58,8 @@ def insert_parsed_sections(newsletter_id: str, parsed_data: dict) -> None:
         key_levels_raw=parsed_data.get("KeyLevelsRaw"),
         trading_plan=parsed_data.get("TradingPlan"),
         plan_summary=parsed_data.get("PlanSummary"),
-        summary=parsed_data.get("summary")
+        summary=parsed_data.get("summary"),
+        timing_detail=parsed_data.get("timing_detail")
     )
 
 

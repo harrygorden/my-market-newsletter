@@ -4,6 +4,8 @@ from anvil.tables import app_tables
 from . import db_access
 import re
 import spacy
+from datetime import datetime, timedelta
+import pytz
 
 """
 email_parser.py
@@ -253,5 +255,26 @@ def parse_email(raw_body: str) -> dict:
     
     # Join all parts with a newline
     parsed["summary"] = '\n\n'.join(part for part in summary_parts if part)
+
+    # Generate timing detail
+    utc_now = datetime.now(pytz.UTC)
+    central = pytz.timezone('America/Chicago')
+    now = utc_now.astimezone(central)
+    
+    current_date = now.strftime("%A, %B %d, %Y")
+    current_time = now.strftime("%H:%M")
+    
+    # Calculate next business day (keeping timezone awareness)
+    next_day = now + timedelta(days=1)
+    if next_day.weekday() >= 5:  # Saturday or Sunday
+        days_to_add = 7 - next_day.weekday() + 1  # Days until Monday
+        next_day = now + timedelta(days=days_to_add)
+    
+    next_date = next_day.strftime("%A, %B %d, %Y")
+    
+    timing_detail = (f"This summary was generated at {current_time} CST on {current_date}, "
+                    f"in preparation for the trading session on {next_date}.")
+    
+    parsed["timing_detail"] = timing_detail
 
     return parsed 

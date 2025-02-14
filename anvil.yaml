@@ -10,9 +10,6 @@ db_schema:
       name: time
       type: string
     - admin_ui: {width: 200}
-      name: country
-      type: string
-    - admin_ui: {width: 200}
       name: event
       type: string
     server: full
@@ -60,6 +57,12 @@ db_schema:
       type: string
     - admin_ui: {order: 6, width: 132}
       name: summary
+      type: string
+    - admin_ui: {order: 0.5, width: 200}
+      name: timing_detail
+      type: string
+    - admin_ui: {order: 0.75, width: 200}
+      name: upcoming_events
       type: string
     server: full
     title: parsed_sections
