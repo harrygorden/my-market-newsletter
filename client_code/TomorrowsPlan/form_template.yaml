@@ -11,8 +11,8 @@ components:
       type: RichText
     - components:
       - layout_properties: {grid_position: 'DLUXWZ,DLQTGL'}
-        name: label_1
-        properties: {align: center, bold: false, font_size: 24, foreground: 'theme:On Secondary Container', text: 'Upcoming market events:', underline: true}
+        name: label_market_events
+        properties: {align: center, bold: false, font_size: 24, foreground: 'theme:On Secondary Container', text: Placeholder for market events header, underline: true}
         type: Label
       - layout_properties: {grid_position: 'DPPUSJ,EHAWIH'}
         name: rich_text_upcoming_events

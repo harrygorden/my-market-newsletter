@@ -6,6 +6,7 @@ from anvil.tables import app_tables
 import anvil.google.auth, anvil.google.drive
 from anvil.google.drive import app_files
 import anvil.server
+from datetime import datetime, timezone
 
 
 class TomorrowsPlan(TomorrowsPlanTemplate):
@@ -20,5 +21,18 @@ class TomorrowsPlan(TomorrowsPlanTemplate):
     self.rich_text_summary.content = data['summary']
     self.rich_text_timing_detail.content = data['timing_detail']
     self.rich_text_upcoming_events.content = data['upcoming_events']
+
+    # Update label text based on day/time
+    current_time = datetime.now(timezone.utc)
+    current_weekday = current_time.weekday()  # Monday is 0, Sunday is 6
+    current_hour = current_time.hour
+
+    # Check if it's between Friday 23:00 UTC and Monday 23:00 UTC
+    if (current_weekday == 4 and current_hour >= 23) or \
+       current_weekday in [5, 6] or \
+       (current_weekday == 0 and current_hour < 23):
+        self.label_market_events.text = "Next Week's Events"
+    else:
+        self.label_market_events.text = "This Week's Remaining Events"
 
     # Any code you write here will run before the form opens.
