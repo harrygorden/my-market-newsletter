@@ -204,6 +204,10 @@ def find_nearby_vdlines(level, max_distance=3):
         
     Returns:
         str: Type of the matching vdline or None if no match found
+           - When multiple vdlines are found within max_distance:
+             - Non-Skyline types are prioritized over Skyline types
+             - The first non-Skyline type is returned if multiple are found
+             - If only Skyline types are found, the first one is returned
     """
     try:
         # Convert level to float for numeric comparison
@@ -212,13 +216,30 @@ def find_nearby_vdlines(level, max_distance=3):
         # Query all vdlines from the app table
         all_vdlines = app_tables.vdlines.search()
         
-        # Check each vdline to see if it's within the specified distance
+        # Collect all matching vdlines within the specified distance
+        matching_vdlines = []
         for vdline in all_vdlines:
             vdline_price = float(vdline['Price'])
             if abs(vdline_price - level_float) <= max_distance:
-                return vdline['Type']
+                matching_vdlines.append(vdline)
         
-        return None
+        # If no matches found, return None
+        if not matching_vdlines:
+            return None
+            
+        # If only one match found, return its type
+        if len(matching_vdlines) == 1:
+            return matching_vdlines[0]['Type']
+            
+        # If multiple matches found, prioritize non-Skyline types
+        non_skyline_vdlines = [vdline for vdline in matching_vdlines if vdline['Type'] != 'Skyline']
+        
+        # Return the first non-Skyline type if any exist, otherwise return the first Skyline type
+        if non_skyline_vdlines:
+            return non_skyline_vdlines[0]['Type']
+        else:
+            return matching_vdlines[0]['Type']
+        
     except Exception as e:
         print(f"Error finding nearby vdlines: {e}")
         return None
