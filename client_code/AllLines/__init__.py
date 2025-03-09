@@ -37,9 +37,10 @@ class AllLines(AllLinesTemplate):
       if len(all_lines_data) > 0:
         print(f"Sample data: {all_lines_data[0]}")
         
-        # IMPORTANT: Set the data to the repeating panel, not the data grid directly
-        self.data_grid_all_lines.repeating_panel_1.items = all_lines_data
-        print(f"Set {len(all_lines_data)} items to repeating_panel_1")
+        # In Anvil, the DataGrid itself takes the items directly
+        # Set the data to the DataGrid directly (this is the correct way)
+        self.data_grid_all_lines.items = all_lines_data
+        print(f"Set {len(all_lines_data)} items to data_grid_all_lines")
         
         notification = Notification(f"Loaded {len(all_lines_data)} key levels", timeout=3)
         notification.show()
@@ -47,8 +48,8 @@ class AllLines(AllLinesTemplate):
         # Show notification if no data
         notification = Notification(f"No data found in keylevelsraw table. Row count from debug: {debug_info.get('row_count', 0)}", timeout=5)
         notification.show()
-        # Clear the repeating panel
-        self.data_grid_all_lines.repeating_panel_1.items = []
+        # Clear the data grid
+        self.data_grid_all_lines.items = []
         
     except Exception as e:
       # Handle any errors loading the data
@@ -72,9 +73,9 @@ class AllLines(AllLinesTemplate):
       if len(all_lines_data) > 0:
         print(f"First item: {all_lines_data[0]}")
         
-        # IMPORTANT: Set the data to the repeating panel, not the data grid directly
-        self.data_grid_all_lines.repeating_panel_1.items = all_lines_data
-        print(f"Set {len(all_lines_data)} items to repeating_panel_1")
+        # Set the data to the DataGrid directly
+        self.data_grid_all_lines.items = all_lines_data
+        print(f"Set {len(all_lines_data)} items to data_grid_all_lines")
         
         notification = Notification(f"Loaded {len(all_lines_data)} key levels from force refresh", timeout=3)
         notification.show()
@@ -82,8 +83,8 @@ class AllLines(AllLinesTemplate):
         # Show notification if no data
         notification = Notification("No data found in keylevelsraw table after force refresh.", timeout=5)
         notification.show()
-        # Clear the repeating panel
-        self.data_grid_all_lines.repeating_panel_1.items = []
+        # Clear the data grid
+        self.data_grid_all_lines.items = []
         
     except Exception as e:
       # Handle any errors loading the data
@@ -94,7 +95,7 @@ class AllLines(AllLinesTemplate):
   def refresh_button_click(self, **event_args):
     """Called when the Refresh Data button is clicked"""
     # Clear any existing data
-    self.data_grid_all_lines.repeating_panel_1.items = []
+    self.data_grid_all_lines.items = []
     
     # Force a refresh from the server
     self.refresh_data()
@@ -102,7 +103,7 @@ class AllLines(AllLinesTemplate):
   def force_refresh_button_click(self, **event_args):
     """Called when the Force Refresh button is clicked"""
     # Clear any existing data
-    self.data_grid_all_lines.repeating_panel_1.items = []
+    self.data_grid_all_lines.items = []
     
     # Call the force refresh method
     self.force_refresh_data()
@@ -160,24 +161,18 @@ class AllLines(AllLinesTemplate):
       print(f"DataGrid available: {hasattr(self, 'data_grid_all_lines')}")
       if hasattr(self, 'data_grid_all_lines'):
         print(f"DataGrid type: {type(self.data_grid_all_lines).__name__}")
-        print(f"DataGrid has RepeatingPanel: {hasattr(self.data_grid_all_lines, 'repeating_panel_1')}")
         
-        if hasattr(self.data_grid_all_lines, 'repeating_panel_1'):
-          print("Found repeating_panel_1 inside data_grid_all_lines")
-          
-          # Try setting data directly to test
-          all_lines_data = anvil.server.call("get_all_lines_data")
-          print(f"Retrieved {len(all_lines_data)} rows of test data")
-          
-          # Set data to RepeatingPanel
-          rp = self.data_grid_all_lines.repeating_panel_1
-          print(f"RepeatingPanel type: {type(rp).__name__}")
-          rp.items = all_lines_data
-          print(f"Set {len(all_lines_data)} items directly to repeating_panel_1")
-          
-          # Validate data assignment
-          if hasattr(rp, 'items'):
-            print(f"RepeatingPanel now has {len(rp.items)} items")
+        # Try setting data directly to test
+        all_lines_data = anvil.server.call("get_all_lines_data")
+        print(f"Retrieved {len(all_lines_data)} rows of test data")
+        
+        # Set data to DataGrid directly
+        self.data_grid_all_lines.items = all_lines_data
+        print(f"Set {len(all_lines_data)} items directly to data_grid_all_lines")
+        
+        # Validate data assignment
+        if hasattr(self.data_grid_all_lines, 'items'):
+          print(f"DataGrid now has {len(self.data_grid_all_lines.items)} items")
       else:
         print("WARNING: data_grid_all_lines component not found! Check the component name.")
       
