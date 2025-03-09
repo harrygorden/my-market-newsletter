@@ -22,8 +22,9 @@ components:
       type: Button
     - components:
       - components:
-        - name: repeating_panel_1
-          properties: {item_template: AllLines.RowTemplate1}
+        - layout_properties: {}
+          name: repeating_panel_1
+          properties: {item_template: AllLines.RowTemplate1, role: null}
           type: RepeatingPanel
         layout_properties: {full_width_row: true, grid_position: 'MXCJNQ,POYPWI'}
         name: data_grid_all_lines
