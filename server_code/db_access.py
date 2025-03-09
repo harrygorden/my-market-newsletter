@@ -189,40 +189,11 @@ def clear_keylevelsraw_table():
         return False
 
 
-def insert_key_levels_to_keylevelsraw(levels_data):
-    """
-    Insert key levels into the keylevelsraw table.
-    
-    Args:
-        levels_data (dict): Dictionary containing lists of levels with their details
-            
-    Returns:
-        int: Number of rows inserted
-    """
-    try:
-        rows_added = 0
-        
-        # Process all levels
-        for level in levels_data:
-            app_tables.keylevelsraw.add_row(
-                price_with_range=level.get('price_with_range', ''),
-                price=level.get('price', 0),
-                severity=level.get('severity', ''),
-                type=level.get('type', ''),
-                note=level.get('note', '')  # Changed from 'notes' to 'note' to match extraction field name
-            )
-            rows_added += 1
-                
-        return rows_added
-    except Exception as e:
-        print(f"Error inserting key levels to keylevelsraw: {str(e)}")
-        return 0
-
-
 def extract_and_store_key_levels(newsletter_id, trading_plan_key_levels, key_levels_detail):
     """
     Extract levels from both Core Structures/Levels section and Trading Plan section,
     combine them, remove duplicates, and store them in the keylevelsraw table.
+    Also find and associate nearby vdlines for each level.
     
     Args:
         newsletter_id (str): The unique identifier of the newsletter
@@ -238,6 +209,10 @@ def extract_and_store_key_levels(newsletter_id, trading_plan_key_levels, key_lev
         # Clear the existing keylevelsraw table
         clear_keylevelsraw_table()
         
+        # Get all vdlines from the app table for faster lookup
+        all_vdlines = app_tables.vdlines.search()
+        vdlines_data = [{'price': float(vdline['Price']), 'type': vdline['Type']} for vdline in all_vdlines]
+        
         # Create a unified list of all levels
         all_levels = []
         
@@ -246,11 +221,31 @@ def extract_and_store_key_levels(newsletter_id, trading_plan_key_levels, key_lev
             # Add supports
             for level in trading_plan_key_levels.get('supports', []):
                 level['note'] = ''  # Initialize note field
+                
+                # Find nearby vdlines
+                nearest_vdline = find_nearest_vdline(float(level.get('price', 0)), vdlines_data)
+                if nearest_vdline:
+                    level['vdline'] = nearest_vdline['price']
+                    level['vdline_type'] = nearest_vdline['type']
+                else:
+                    level['vdline'] = None
+                    level['vdline_type'] = None
+                
                 all_levels.append(level)
             
             # Add resistances
             for level in trading_plan_key_levels.get('resistances', []):
                 level['note'] = ''  # Initialize note field
+                
+                # Find nearby vdlines
+                nearest_vdline = find_nearest_vdline(float(level.get('price', 0)), vdlines_data)
+                if nearest_vdline:
+                    level['vdline'] = nearest_vdline['price']
+                    level['vdline_type'] = nearest_vdline['type']
+                else:
+                    level['vdline'] = None
+                    level['vdline_type'] = None
+                
                 all_levels.append(level)
         
         # Process KEY LEVELS DETAIL levels and either merge with existing or add as new
@@ -279,6 +274,16 @@ def extract_and_store_key_levels(newsletter_id, trading_plan_key_levels, key_lev
                         'type': 'key_level',  # Mark as generic key level
                         'note': detail_level.get('note', '')
                     }
+                    
+                    # Find nearby vdlines
+                    nearest_vdline = find_nearest_vdline(float(new_level.get('price', 0)), vdlines_data)
+                    if nearest_vdline:
+                        new_level['vdline'] = nearest_vdline['price']
+                        new_level['vdline_type'] = nearest_vdline['type']
+                    else:
+                        new_level['vdline'] = None
+                        new_level['vdline_type'] = None
+                    
                     all_levels.append(new_level)
         
         # Sort all levels by price (descending)
@@ -289,4 +294,78 @@ def extract_and_store_key_levels(newsletter_id, trading_plan_key_levels, key_lev
         
     except Exception as e:
         print(f"Error extracting and storing key levels: {str(e)}")
+        return 0
+
+
+def find_nearest_vdline(level_price, vdlines_data, max_distance=3):
+    """
+    Find the nearest vdline within max_distance of the given price level.
+    Prioritizes non-Skyline types over Skyline types.
+    
+    Args:
+        level_price (float): The price level to check
+        vdlines_data (list): List of vdline dictionaries with 'price' and 'type' keys
+        max_distance (int): Maximum distance to consider a match (default: 3)
+        
+    Returns:
+        dict: Dictionary with 'price' and 'type' of the matching vdline or None if no match found
+    """
+    try:
+        # Collect all matching vdlines within the specified distance
+        matching_vdlines = []
+        for vdline in vdlines_data:
+            if abs(vdline['price'] - level_price) <= max_distance:
+                matching_vdlines.append(vdline)
+        
+        # If no matches found, return None
+        if not matching_vdlines:
+            return None
+            
+        # If only one match found, return it
+        if len(matching_vdlines) == 1:
+            return matching_vdlines[0]
+            
+        # If multiple matches found, prioritize non-Skyline types
+        non_skyline_vdlines = [vdline for vdline in matching_vdlines if vdline['type'] != 'Skyline']
+        
+        # Return the first non-Skyline type if any exist, otherwise return the first Skyline type
+        if non_skyline_vdlines:
+            return non_skyline_vdlines[0]
+        else:
+            return matching_vdlines[0]
+        
+    except Exception as e:
+        print(f"Error finding nearest vdline: {e}")
+        return None
+
+
+def insert_key_levels_to_keylevelsraw(levels_data):
+    """
+    Insert key levels into the keylevelsraw table.
+    
+    Args:
+        levels_data (dict): Dictionary containing lists of levels with their details
+            
+    Returns:
+        int: Number of rows inserted
+    """
+    try:
+        rows_added = 0
+        
+        # Process all levels
+        for level in levels_data:
+            app_tables.keylevelsraw.add_row(
+                price_with_range=level.get('price_with_range', ''),
+                price=level.get('price', 0),
+                severity=level.get('severity', ''),
+                type=level.get('type', ''),
+                note=level.get('note', ''),  # Changed from 'notes' to 'note' to match extraction field name
+                vdline=level.get('vdline'),  # Add vdline column
+                vdline_type=level.get('vdline_type')  # Add vdline_type column
+            )
+            rows_added += 1
+                
+        return rows_added
+    except Exception as e:
+        print(f"Error inserting key levels to keylevelsraw: {str(e)}")
         return 0
