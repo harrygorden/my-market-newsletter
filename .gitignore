@@ -5,3 +5,4 @@ __pycache__
 db_tools*
 .env
 ES1VoodooLines.csv
+server_code/DB_Utils/
