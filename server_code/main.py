@@ -285,6 +285,21 @@ def refresh_all_lines_data_bg():
 
 
 @anvil.server.callable
+def force_refresh_all_lines():
+    """
+    Force a refresh of the keylevelsraw table data and return the refreshed data.
+    This function can be called from anywhere to ensure the most up-to-date data is returned.
+    
+    Returns:
+        list: A list of dictionaries representing each row in the keylevelsraw table
+    """
+    print("\n=== FORCE REFRESH requested for keylevelsraw table ===")
+    
+    # Call the regular function to get the data with all its debugging
+    return get_all_lines_data()
+
+
+@anvil.server.callable
 def debug_keylevelsraw_table():
     """
     Debug function to directly check the contents of the keylevelsraw table
