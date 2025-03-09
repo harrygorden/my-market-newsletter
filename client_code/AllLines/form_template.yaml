@@ -14,9 +14,9 @@ components:
         name: data_grid_all_lines
         properties:
           columns:
-          - {data_key: price_with_range, expand: false, id: UQJOXB, title: Price, width: 151}
-          - {data_key: severity, expand: false, id: KEDQWZ, title: Major, width: 102}
-          - {data_key: note, expand: false, id: ZUUKXL, title: Note, width: 898}
+          - {data_key: price, expand: false, id: UQJOXB, title: Price, width: 151}
+          - {data_key: major, expand: false, id: KEDQWZ, title: Major, width: 102}
+          - {data_key: notes, expand: false, id: ZUUKXL, title: Note, width: 898}
           - {data_key: vdline, id: BYNGAY, title: VDLine}
           - {data_key: vdline_type, id: DZZRNN, title: VDLine Type}
           foreground: theme:On Background

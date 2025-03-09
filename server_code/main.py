@@ -170,13 +170,13 @@ def get_all_lines_data():
             print(f"First row keys: {key_levels[0].keys()}")
         
         # Convert rows to a list of dictionaries for the data grid
-        # Make sure to match the data_key names used in the DataGrid
+        # The data_key values in the DataGrid now match the table field names exactly
         result = []
         for row in key_levels:
             result.append({
-                "price_with_range": row.get("price"),  # Changed from "price" to match DataGrid
-                "severity": row.get("major"),          # Changed from "major" to match DataGrid
-                "note": row.get("notes"),              # Changed from "notes" to match DataGrid
+                "price": row.get("price"),
+                "major": row.get("major"),
+                "notes": row.get("notes"),
                 "vdline": row.get("vdline"),
                 "vdline_type": row.get("vdline_type")
             })
