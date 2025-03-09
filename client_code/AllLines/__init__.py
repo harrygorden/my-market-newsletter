@@ -42,7 +42,7 @@ class AllLines(AllLinesTemplate):
         notification.show()
       else:
         # Show notification if no data
-        notification = Notification(f"No data found in KeyLevelsRaw table. Row count from debug: {debug_info.get('row_count', 0)}", timeout=5)
+        notification = Notification(f"No data found in keylevelsraw table. Row count from debug: {debug_info.get('row_count', 0)}", timeout=5)
         notification.show()
         self.data_grid_all_lines.items = []
         

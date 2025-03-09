@@ -155,17 +155,17 @@ def print_data_to_form():
 @anvil.server.callable
 def get_all_lines_data():
     """
-    Retrieves all rows from the KeyLevelsRaw table for display in the AllLines form.
+    Retrieves all rows from the keylevelsraw table for display in the AllLines form.
     
     Returns:
-        list: A list of dictionaries representing each row in the KeyLevelsRaw table
+        list: A list of dictionaries representing each row in the keylevelsraw table
     """
     try:
-        # Get all rows from the KeyLevelsRaw table - note the correct capitalization
-        key_levels = app_tables.KeyLevelsRaw.search()
+        # Get all rows from the keylevelsraw table
+        key_levels = app_tables.keylevelsraw.search()
         
         # Print debugging information about what was retrieved
-        print(f"Retrieved {len(key_levels)} rows from KeyLevelsRaw table")
+        print(f"Retrieved {len(key_levels)} rows from keylevelsraw table")
         if len(key_levels) > 0:
             print(f"First row column names: {list(key_levels[0].keys())}")
             print(f"First row values: {list(key_levels[0].values())}")
@@ -190,7 +190,7 @@ def get_all_lines_data():
         # Return the list of dictionaries
         return result
     except Exception as e:
-        print(f"Error retrieving data from KeyLevelsRaw: {str(e)}")
+        print(f"Error retrieving data from keylevelsraw: {str(e)}")
         # Return an empty list in case of error
         return []
 
@@ -198,19 +198,19 @@ def get_all_lines_data():
 @anvil.server.callable
 def debug_keylevelsraw_table():
     """
-    Debug function to directly check the contents of the KeyLevelsRaw table
+    Debug function to directly check the contents of the keylevelsraw table
     and print detailed information about each row.
     
     Returns:
         dict: Debug information about the table
     """
     try:
-        # Get all rows from the KeyLevelsRaw table
-        rows = app_tables.KeyLevelsRaw.search()
+        # Get all rows from the keylevelsraw table
+        rows = app_tables.keylevelsraw.search()
         row_count = len(rows)
         
-        print(f"=== DEBUG: KeyLevelsRaw table ===")
-        print(f"Found {row_count} rows in KeyLevelsRaw table")
+        print(f"=== DEBUG: keylevelsraw table ===")
+        print(f"Found {row_count} rows in keylevelsraw table")
         
         # Get column names from the first row if available
         column_names = []
