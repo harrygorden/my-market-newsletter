@@ -261,13 +261,25 @@ def parse_email(raw_body: str) -> dict:
         # Extract lines starting with numbers followed by colon
         key_levels = []
         key_levels_raw = []
+        key_levels_detail = []
+        
         for line in levels_text.split('\n'):
-            if match := re.match(r'(\d+(?:\.\d+)?)\s*:', line):
+            if match := re.match(r'(\d+(?:\.\d+)?)\s*:(.*)', line):
+                price = match.group(1).strip()
+                note = match.group(2).strip()
                 key_levels.append(line.strip())
-                key_levels_raw.append(float(match.group(1)))  # Convert to float for proper numeric sorting
+                key_levels_raw.append(float(price))  # Convert to float for proper numeric sorting
+                key_levels_detail.append({
+                    'price': float(price),
+                    'price_with_range': price,
+                    'note': note,
+                    'type': 'key_level'  # To differentiate from support/resistance
+                })
+                
         # Sort key_levels_raw in descending order and convert back to strings
         key_levels_raw.sort(reverse=True)
         parsed["KeyLevels"] = '\n'.join(key_levels)
+        parsed["KeyLevelsDetail"] = key_levels_detail
         
         # Format KeyLevelsRaw with nearby vdline information
         formatted_key_levels_raw = []
@@ -286,6 +298,7 @@ def parse_email(raw_body: str) -> dict:
     else:
         parsed["KeyLevels"] = ""
         parsed["KeyLevelsRaw"] = ""
+        parsed["KeyLevelsDetail"] = []
 
     # Extract Trading Plan section
     trading_plan_match = re.search(r'<SECTION>Trading Plan:</SECTION>\s*(.*?)(?=<SECTION>|$)', raw_body, re.DOTALL)

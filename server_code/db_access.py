@@ -194,8 +194,7 @@ def insert_key_levels_to_keylevelsraw(levels_data):
     Insert key levels into the keylevelsraw table.
     
     Args:
-        levels_data (dict): Dictionary containing lists of support and resistance levels
-            with their details from both Core Structures section and Trading Plan section
+        levels_data (dict): Dictionary containing lists of levels with their details
             
     Returns:
         int: Number of rows inserted
@@ -203,27 +202,16 @@ def insert_key_levels_to_keylevelsraw(levels_data):
     try:
         rows_added = 0
         
-        # Process support levels
-        if 'supports' in levels_data:
-            for level in levels_data['supports']:
-                app_tables.keylevelsraw.add_row(
-                    price_with_range=level['price_with_range'],
-                    price=level['price'],
-                    severity=level['severity'],
-                    type=level['type']
-                )
-                rows_added += 1
-                
-        # Process resistance levels
-        if 'resistances' in levels_data:
-            for level in levels_data['resistances']:
-                app_tables.keylevelsraw.add_row(
-                    price_with_range=level['price_with_range'],
-                    price=level['price'],
-                    severity=level['severity'],
-                    type=level['type']
-                )
-                rows_added += 1
+        # Process all levels
+        for level in levels_data:
+            app_tables.keylevelsraw.add_row(
+                price_with_range=level.get('price_with_range', ''),
+                price=level.get('price', 0),
+                severity=level.get('severity', ''),
+                type=level.get('type', ''),
+                note=level.get('note', '')  # Changed from 'notes' to 'note' to match extraction field name
+            )
+            rows_added += 1
                 
         return rows_added
     except Exception as e:
@@ -231,15 +219,17 @@ def insert_key_levels_to_keylevelsraw(levels_data):
         return 0
 
 
-def extract_and_store_key_levels(newsletter_id, trading_plan_key_levels):
+def extract_and_store_key_levels(newsletter_id, trading_plan_key_levels, key_levels_detail):
     """
-    Extract levels from both Core Structures section and Trading Plan section,
+    Extract levels from both Core Structures/Levels section and Trading Plan section,
     combine them, remove duplicates, and store them in the keylevelsraw table.
     
     Args:
         newsletter_id (str): The unique identifier of the newsletter
         trading_plan_key_levels (dict): Dictionary containing support and resistance levels 
-                                        extracted from the Trading Plan section
+                                      extracted from the Trading Plan section
+        key_levels_detail (list): List of dictionaries with detailed key levels 
+                                 from the Core Structures/Levels section
     
     Returns:
         int: Total number of key levels stored
@@ -248,38 +238,54 @@ def extract_and_store_key_levels(newsletter_id, trading_plan_key_levels):
         # Clear the existing keylevelsraw table
         clear_keylevelsraw_table()
         
-        # Combine and deduplicate the key levels
-        combined_levels = {
-            'supports': [],
-            'resistances': []
-        }
+        # Create a unified list of all levels
+        all_levels = []
         
-        # Add all the levels from the Trading Plan section
+        # First add all the levels from the Trading Plan section
         if trading_plan_key_levels:
-            combined_levels['supports'].extend(trading_plan_key_levels.get('supports', []))
-            combined_levels['resistances'].extend(trading_plan_key_levels.get('resistances', []))
+            # Add supports
+            for level in trading_plan_key_levels.get('supports', []):
+                level['note'] = ''  # Initialize note field
+                all_levels.append(level)
+            
+            # Add resistances
+            for level in trading_plan_key_levels.get('resistances', []):
+                level['note'] = ''  # Initialize note field
+                all_levels.append(level)
         
-        # Create a set to track unique price values we've already added
-        added_prices = set()
+        # Process KEY LEVELS DETAIL levels and either merge with existing or add as new
+        if key_levels_detail:
+            for detail_level in key_levels_detail:
+                detail_price = detail_level.get('price', 0)
+                
+                # Try to find a matching level within 3 points
+                found_match = False
+                for level in all_levels:
+                    level_price = level.get('price', 0)
+                    
+                    # Check if within 3 points
+                    if abs(detail_price - level_price) <= 3:
+                        # Found a match - add the note to this level
+                        level['note'] = detail_level.get('note', '')
+                        found_match = True
+                        break
+                
+                if not found_match:
+                    # No match found - add as a new level
+                    new_level = {
+                        'price_with_range': detail_level.get('price_with_range', ''),
+                        'price': detail_level.get('price', 0),
+                        'severity': '',  # No severity info in KEY LEVELS DETAIL
+                        'type': 'key_level',  # Mark as generic key level
+                        'note': detail_level.get('note', '')
+                    }
+                    all_levels.append(new_level)
         
-        # Filter out duplicates based on the price value
-        filtered_supports = []
-        for level in combined_levels['supports']:
-            if level['price'] not in added_prices:
-                added_prices.add(level['price'])
-                filtered_supports.append(level)
+        # Sort all levels by price (descending)
+        all_levels.sort(key=lambda x: x.get('price', 0), reverse=True)
         
-        filtered_resistances = []
-        for level in combined_levels['resistances']:
-            if level['price'] not in added_prices:
-                added_prices.add(level['price'])
-                filtered_resistances.append(level)
-        
-        combined_levels['supports'] = filtered_supports
-        combined_levels['resistances'] = filtered_resistances
-        
-        # Insert the combined levels into the keylevelsraw table
-        return insert_key_levels_to_keylevelsraw(combined_levels)
+        # Insert all levels into the keylevelsraw table
+        return insert_key_levels_to_keylevelsraw(all_levels)
         
     except Exception as e:
         print(f"Error extracting and storing key levels: {str(e)}")

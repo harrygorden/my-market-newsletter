@@ -76,9 +76,13 @@ def process_newsletter():
         insert_parsed_sections(newsletter_id, parsed_data)
         print("Parsed sections saved successfully")
         
-        # Extract and store key levels from the Trading Plan section
+        # Extract and store key levels from both Trading Plan and Key Levels Detail sections
         print("Extracting and storing key levels...")
-        key_levels_count = extract_and_store_key_levels(newsletter_id, parsed_data.get("TradingPlanKeyLevels"))
+        key_levels_count = extract_and_store_key_levels(
+            newsletter_id, 
+            parsed_data.get("TradingPlanKeyLevels"),
+            parsed_data.get("KeyLevelsDetail", [])
+        )
         print(f"Extracted and stored {key_levels_count} key levels from the newsletter")
         
         # Update upcoming events
