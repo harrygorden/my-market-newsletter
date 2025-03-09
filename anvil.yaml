@@ -1,7 +1,7 @@
 allow_embedding: false
 db_schema:
   keylevelsraw:
-    client: none
+    client: search
     columns:
     - admin_ui: {order: -1, width: 172}
       name: price_with_range
