@@ -203,7 +203,7 @@ def find_nearby_vdlines(level, max_distance=3):
         max_distance (int): Maximum distance to consider a match (default: 3)
         
     Returns:
-        str: Type of the matching vdline or None if no match found
+        str: Formatted string "Type at Price" of the matching vdline or None if no match found
            - When multiple vdlines are found within max_distance:
              - Non-Skyline types are prioritized over Skyline types
              - The first non-Skyline type is returned if multiple are found
@@ -227,18 +227,21 @@ def find_nearby_vdlines(level, max_distance=3):
         if not matching_vdlines:
             return None
             
-        # If only one match found, return its type
+        # If only one match found, return its formatted string
         if len(matching_vdlines) == 1:
-            return matching_vdlines[0]['Type']
+            vdline = matching_vdlines[0]
+            return f"{vdline['Type']} at {vdline['Price']}"
             
         # If multiple matches found, prioritize non-Skyline types
         non_skyline_vdlines = [vdline for vdline in matching_vdlines if vdline['Type'] != 'Skyline']
         
         # Return the first non-Skyline type if any exist, otherwise return the first Skyline type
         if non_skyline_vdlines:
-            return non_skyline_vdlines[0]['Type']
+            vdline = non_skyline_vdlines[0]
+            return f"{vdline['Type']} at {vdline['Price']}"
         else:
-            return matching_vdlines[0]['Type']
+            vdline = matching_vdlines[0]
+            return f"{vdline['Type']} at {vdline['Price']}"
         
     except Exception as e:
         print(f"Error finding nearby vdlines: {e}")
@@ -275,7 +278,7 @@ def parse_email(raw_body: str) -> dict:
             # Check if this level is near any vdline
             vdline_type = find_nearby_vdlines(num)
             if vdline_type:
-                level_str = f"{level_str} ({vdline_type})"
+                level_str = f"{level_str} [{vdline_type}]"
                 
             formatted_key_levels_raw.append(level_str)
             
