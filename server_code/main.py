@@ -161,6 +161,7 @@ def get_all_lines_data():
         list: A list of dictionaries representing each row in the keylevelsraw table
     """
     try:
+        print("\n=== BEGIN get_all_lines_data ===")
         # Get all rows from the keylevelsraw table
         key_levels = app_tables.keylevelsraw.search()
         
@@ -173,24 +174,32 @@ def get_all_lines_data():
         # Convert rows to a list of dictionaries for the data grid
         result = []
         for row in key_levels:
-            result.append({
+            item = {
                 "price": row.get("price_with_range") or row.get("price", ""),
                 "major": row.get("severity", ""),
                 "notes": row.get("note", ""),
                 "vdline": row.get("vdline", ""),
                 "vdline_type": row.get("vdline_type", "")
-            })
+            }
+            result.append(item)
+            
+            # Print the first item for debugging
+            if len(result) == 1:
+                print(f"First transformed row: {item}")
         
         # Print debug info about the result
         print(f"Returning {len(result)} formatted rows")
         if len(result) > 0:
-            print(f"First result item keys: {result[0].keys()}")
+            print(f"First result item keys: {list(result[0].keys())}")
             print(f"First result item values: {list(result[0].values())}")
             
+        print("=== END get_all_lines_data ===\n")
         # Return the list of dictionaries
         return result
     except Exception as e:
         print(f"Error retrieving data from keylevelsraw: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         # Return an empty list in case of error
         return []
 
@@ -289,30 +298,73 @@ def debug_keylevelsraw_table():
         rows = app_tables.keylevelsraw.search()
         row_count = len(rows)
         
-        print(f"=== DEBUG: keylevelsraw table ===")
+        print(f"\n=== DEBUG: keylevelsraw table ===")
         print(f"Found {row_count} rows in keylevelsraw table")
+        
+        # Debug info about the table itself
+        try:
+            print("Table metadata:")
+            print(f"  Table name: {app_tables.keylevelsraw.__table_name__}")
+            print(f"  Table id: {app_tables.keylevelsraw.__table_id__}")
+        except Exception as table_err:
+            print(f"Error getting table metadata: {str(table_err)}")
         
         # Get column names from the first row if available
         column_names = []
         if row_count > 0:
-            column_names = list(rows[0].keys())
+            first_row = rows[0]
+            column_names = list(first_row.keys())
             print(f"Column names: {column_names}")
+            
+            # Print types of each column value
+            print("First row column types:")
+            for col in column_names:
+                value = first_row[col]
+                print(f"  {col}: {type(value).__name__} = {value}")
         
-        # Print details of each row
-        for i, row in enumerate(rows):
+        # Print details of each row (limit to first 5 for brevity)
+        max_rows_to_print = min(5, row_count)
+        for i, row in enumerate(rows[:max_rows_to_print]):
             print(f"Row {i+1}:")
             for col in column_names:
                 print(f"  {col}: {row[col]}")
             print("---")
         
+        # Check if we need a warning about field mapping based on the memory information
+        expected_ui_fields = ["price", "major", "notes", "vdline", "vdline_type"]
+        field_mapping_warnings = []
+        
+        # Check for each expected UI field if there's a clear mapping to DB field
+        if row_count > 0:
+            db_to_ui_mapping = {
+                "price_with_range": "price",
+                "price": "price",
+                "severity": "major",
+                "note": "notes",
+                "vdline": "vdline",
+                "vdline_type": "vdline_type"
+            }
+            
+            for db_field, ui_field in db_to_ui_mapping.items():
+                if db_field not in column_names:
+                    field_mapping_warnings.append(f"Database field '{db_field}' expected for UI field '{ui_field}' is missing")
+        
+        if field_mapping_warnings:
+            print("WARNING: Field mapping issues detected:")
+            for warning in field_mapping_warnings:
+                print(f"  - {warning}")
+        
         return {
             "row_count": row_count,
             "column_names": column_names,
-            "sample_rows": [{col: row[col] for col in column_names} for row in rows[:3]] if row_count > 0 else []
+            "sample_rows": [{col: row[col] for col in column_names} for row in rows[:3]] if row_count > 0 else [],
+            "field_mapping_warnings": field_mapping_warnings if field_mapping_warnings else []
         }
         
     except Exception as e:
         print(f"Error in debug_keylevelsraw_table: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         return {"error": str(e)}
 
 
