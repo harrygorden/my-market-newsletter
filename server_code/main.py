@@ -164,17 +164,28 @@ def get_all_lines_data():
         # Get all rows from the keylevelsraw table
         key_levels = app_tables.keylevelsraw.search()
         
+        # Print debugging information about what was retrieved
+        print(f"Retrieved {len(key_levels)} rows from keylevelsraw table")
+        if len(key_levels) > 0:
+            print(f"First row keys: {key_levels[0].keys()}")
+        
         # Convert rows to a list of dictionaries for the data grid
+        # Make sure to match the data_key names used in the DataGrid
         result = []
         for row in key_levels:
             result.append({
-                "price": row.get("price"),
-                "major": row.get("major"),
-                "notes": row.get("notes"),
+                "price_with_range": row.get("price"),  # Changed from "price" to match DataGrid
+                "severity": row.get("major"),          # Changed from "major" to match DataGrid
+                "note": row.get("notes"),              # Changed from "notes" to match DataGrid
                 "vdline": row.get("vdline"),
                 "vdline_type": row.get("vdline_type")
             })
         
+        # Print debug info about the result
+        print(f"Returning {len(result)} formatted rows")
+        if len(result) > 0:
+            print(f"First result item keys: {result[0].keys()}")
+            
         # Return the list of dictionaries
         return result
     except Exception as e:

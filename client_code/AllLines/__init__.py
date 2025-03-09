@@ -14,14 +14,20 @@ class AllLines(AllLinesTemplate):
     # Set Form properties and Data Bindings.
     self.init_components(**properties)
 
-    # Call server function to get all lines data (you might need to create this function)
+    # Call server function to get all lines data
     try:
-      # Here we assume you'll have a server function that returns line data for the grid
-      # If you don't have one yet, you'll need to create it
+      # Fetch data from the server
       all_lines_data = anvil.server.call("get_all_lines_data")
-      self.repeating_panel_1.items = all_lines_data
+      
+      # Debug: Print what we got back from the server
+      print(f"Received {len(all_lines_data)} items from server")
+      
+      # Set the data directly to the DataGrid
+      self.data_grid_all_lines.items = all_lines_data
+      
     except Exception as e:
       # Handle any errors loading the data
+      print(f"Error in AllLines initialization: {str(e)}")
       notification = Notification(f"Error loading data: {str(e)}")
       notification.show()
 
