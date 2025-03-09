@@ -65,7 +65,7 @@ def _get_latest_newsletter():
         print("Gmail service obtained, executing search query...")
 
         # Search for the most recent email from the sender within last 24 hours
-        query = f"from:{sender_email} newer_than:1d"
+        query = f"from:{sender_email} newer_than:2d"
         print(f"Executing Gmail API query: {query}")
         results = service.users().messages().list(userId='me', q=query, maxResults=1).execute()
         print("Search query completed")
