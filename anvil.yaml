@@ -66,6 +66,17 @@ db_schema:
       type: string
     server: full
     title: parsed_sections
+  vdlines:
+    client: none
+    columns:
+    - admin_ui: {order: 0, width: 200}
+      name: Price
+      type: number
+    - admin_ui: {order: 1, width: 200}
+      name: Type
+      type: string
+    server: full
+    title: VDLines
 dependencies: []
 name: My Market Newsletter
 package_name: My_Market_Newsletter
