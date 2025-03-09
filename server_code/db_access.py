@@ -173,11 +173,11 @@ def add_vd_lines(records_list):
 
 def clear_keylevelsraw_table():
     """
-    Clear all rows from the keylevelsraw table.
+    Clear all rows from the KeyLevelsRaw table.
     """
     try:
-        # Get all rows from the keylevelsraw table
-        all_rows = app_tables.keylevelsraw.search()
+        # Get all rows from the KeyLevelsRaw table
+        all_rows = app_tables.KeyLevelsRaw.search()
         
         # Delete each row
         for row in all_rows:
@@ -185,7 +185,7 @@ def clear_keylevelsraw_table():
             
         return True
     except Exception as e:
-        print(f"Error clearing keylevelsraw table: {str(e)}")
+        print(f"Error clearing KeyLevelsRaw table: {str(e)}")
         return False
 
 
@@ -354,7 +354,7 @@ def insert_key_levels_to_keylevelsraw(levels_data):
         
         # Process all levels
         for level in levels_data:
-            app_tables.keylevelsraw.add_row(
+            app_tables.KeyLevelsRaw.add_row(
                 price_with_range=level.get('price_with_range', ''),
                 price=level.get('price', 0),
                 severity=level.get('severity', ''),
