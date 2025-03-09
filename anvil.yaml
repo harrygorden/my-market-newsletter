@@ -3,17 +3,14 @@ db_schema:
   keylevelsraw:
     client: none
     columns:
-    - admin_ui: {width: 200}
+    - admin_ui: {order: -1, width: 172}
       name: price_with_range
       type: string
-    - admin_ui: {width: 200}
+    - admin_ui: {order: 0, width: 155}
       name: price
       type: number
     - admin_ui: {width: 200}
       name: severity
-      type: string
-    - admin_ui: {width: 200}
-      name: notes
       type: string
     - admin_ui: {width: 200}
       name: vdline
@@ -23,6 +20,9 @@ db_schema:
       type: string
     - admin_ui: {width: 200}
       name: type
+      type: string
+    - admin_ui: {order: 1.25, width: 200}
+      name: note
       type: string
     server: full
     title: KeyLevelsRaw
