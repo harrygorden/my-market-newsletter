@@ -12,12 +12,16 @@ import anvil.server
 import anvil.tables as tables
 from anvil.tables import app_tables
 from gmail_client import get_latest_newsletter
-from email_parser import parse_email, clean_newsletter
+from email_parser import (
+    clean_newsletter,
+    parse_email,
+)
 from db_access import (
-    newsletter_exists, 
-    insert_newsletter, 
+    newsletter_exists,
+    insert_newsletter,
     insert_parsed_sections,
-    delete_most_recent_records as db_delete_most_recent
+    delete_most_recent_records as db_delete_most_recent,
+    extract_and_store_key_levels
 )
 from market_calendar import update_upcoming_events
 from send_summary import send_summary_email
@@ -71,6 +75,11 @@ def process_newsletter():
         print("Saving parsed sections...")
         insert_parsed_sections(newsletter_id, parsed_data)
         print("Parsed sections saved successfully")
+        
+        # Extract and store key levels from the Trading Plan section
+        print("Extracting and storing key levels...")
+        key_levels_count = extract_and_store_key_levels(newsletter_id, parsed_data.get("TradingPlanKeyLevels"))
+        print(f"Extracted and stored {key_levels_count} key levels from the newsletter")
         
         # Update upcoming events
         print("Updating upcoming events...")

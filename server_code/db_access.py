@@ -169,3 +169,118 @@ def add_vd_lines(records_list):
     except Exception as e:
         print(f"Error adding VD lines: {str(e)}")
         return 0
+
+
+def clear_keylevelsraw_table():
+    """
+    Clear all rows from the keylevelsraw table.
+    """
+    try:
+        # Get all rows from the keylevelsraw table
+        all_rows = app_tables.keylevelsraw.search()
+        
+        # Delete each row
+        for row in all_rows:
+            row.delete()
+            
+        return True
+    except Exception as e:
+        print(f"Error clearing keylevelsraw table: {str(e)}")
+        return False
+
+
+def insert_key_levels_to_keylevelsraw(levels_data):
+    """
+    Insert key levels into the keylevelsraw table.
+    
+    Args:
+        levels_data (dict): Dictionary containing lists of support and resistance levels
+            with their details from both Core Structures section and Trading Plan section
+            
+    Returns:
+        int: Number of rows inserted
+    """
+    try:
+        rows_added = 0
+        
+        # Process support levels
+        if 'supports' in levels_data:
+            for level in levels_data['supports']:
+                app_tables.keylevelsraw.add_row(
+                    price_with_range=level['price_with_range'],
+                    price=level['price'],
+                    severity=level['severity'],
+                    type=level['type']
+                )
+                rows_added += 1
+                
+        # Process resistance levels
+        if 'resistances' in levels_data:
+            for level in levels_data['resistances']:
+                app_tables.keylevelsraw.add_row(
+                    price_with_range=level['price_with_range'],
+                    price=level['price'],
+                    severity=level['severity'],
+                    type=level['type']
+                )
+                rows_added += 1
+                
+        return rows_added
+    except Exception as e:
+        print(f"Error inserting key levels to keylevelsraw: {str(e)}")
+        return 0
+
+
+def extract_and_store_key_levels(newsletter_id, trading_plan_key_levels):
+    """
+    Extract levels from both Core Structures section and Trading Plan section,
+    combine them, remove duplicates, and store them in the keylevelsraw table.
+    
+    Args:
+        newsletter_id (str): The unique identifier of the newsletter
+        trading_plan_key_levels (dict): Dictionary containing support and resistance levels 
+                                        extracted from the Trading Plan section
+    
+    Returns:
+        int: Total number of key levels stored
+    """
+    try:
+        # Clear the existing keylevelsraw table
+        clear_keylevelsraw_table()
+        
+        # Combine and deduplicate the key levels
+        combined_levels = {
+            'supports': [],
+            'resistances': []
+        }
+        
+        # Add all the levels from the Trading Plan section
+        if trading_plan_key_levels:
+            combined_levels['supports'].extend(trading_plan_key_levels.get('supports', []))
+            combined_levels['resistances'].extend(trading_plan_key_levels.get('resistances', []))
+        
+        # Create a set to track unique price values we've already added
+        added_prices = set()
+        
+        # Filter out duplicates based on the price value
+        filtered_supports = []
+        for level in combined_levels['supports']:
+            if level['price'] not in added_prices:
+                added_prices.add(level['price'])
+                filtered_supports.append(level)
+        
+        filtered_resistances = []
+        for level in combined_levels['resistances']:
+            if level['price'] not in added_prices:
+                added_prices.add(level['price'])
+                filtered_resistances.append(level)
+        
+        combined_levels['supports'] = filtered_supports
+        combined_levels['resistances'] = filtered_resistances
+        
+        # Insert the combined levels into the keylevelsraw table
+        return insert_key_levels_to_keylevelsraw(combined_levels)
+        
+    except Exception as e:
+        print(f"Error extracting and storing key levels: {str(e)}")
+        return 0

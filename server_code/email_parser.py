@@ -288,9 +288,20 @@ def parse_email(raw_body: str) -> dict:
         parsed["KeyLevelsRaw"] = ""
 
     # Extract Trading Plan section
-    trading_plan_match = re.search(r'<SECTION>Trade Plan \w+</SECTION>\s*(.*?)(?=<SECTION>|$)', raw_body, re.DOTALL)
-    parsed["TradingPlan"] = trading_plan_match.group(1).strip() if trading_plan_match else ""
+    trading_plan_match = re.search(r'<SECTION>Trading Plan:</SECTION>\s*(.*?)(?=<SECTION>|$)', raw_body, re.DOTALL)
+    trading_plan_text = trading_plan_match.group(1).strip() if trading_plan_match else ""
+    
+    # If Trading Plan section not found, try alternative format with weekday
+    if not trading_plan_text:
+        alt_trading_plan_match = re.search(r'<SECTION>Trade Plan \w+</SECTION>\s*(.*?)(?=<SECTION>|$)', raw_body, re.DOTALL)
+        trading_plan_text = alt_trading_plan_match.group(1).strip() if alt_trading_plan_match else ""
+    
+    parsed["TradingPlan"] = trading_plan_text
 
+    # Extract additional key levels from Trading Plan section
+    trading_plan_levels = extract_additional_key_levels(trading_plan_text)
+    parsed["TradingPlanKeyLevels"] = trading_plan_levels
+    
     # Extract Plan Summary (single line after "In summary for tomorrow:")
     summary_match = re.search(r'<SECTION>In summary for tomorrow:</SECTION>\s*([^\n]+)', raw_body)
     summary_text = summary_match.group(1).strip() if summary_match else ""
@@ -344,3 +355,100 @@ def parse_email(raw_body: str) -> dict:
     parsed["timing_detail"] = timing_detail
 
     return parsed 
+
+
+def extract_additional_key_levels(trading_plan_text):
+    """
+    Extract key levels from the 'Supports are:' and 'Resistances are:' sections
+    in the Trading Plan section of the newsletter.
+    
+    Args:
+        trading_plan_text (str): The text of the Trading Plan section
+        
+    Returns:
+        dict: Dictionary containing lists of support and resistance levels with their details
+    """
+    result = {
+        'supports': [],
+        'resistances': []
+    }
+    
+    # Extract supports
+    supports_match = re.search(r'Supports are:\s*(.*?)(?=\s*Resistances are:|$)', trading_plan_text, re.DOTALL)
+    if supports_match:
+        supports_text = supports_match.group(1).strip()
+        # Split by commas, handling (major) labels
+        support_items = [item.strip() for item in re.split(r',\s*', supports_text)]
+        for item in support_items:
+            if item:  # Skip empty items
+                level_info = parse_level_item(item, 'support')
+                if level_info:
+                    result['supports'].append(level_info)
+    
+    # Extract resistances
+    resistances_match = re.search(r'Resistances are:\s*(.*?)(?=\s*In terms of|$)', trading_plan_text, re.DOTALL)
+    if resistances_match:
+        resistances_text = resistances_match.group(1).strip()
+        # Split by commas, handling (major) labels
+        resistance_items = [item.strip() for item in re.split(r',\s*', resistances_text)]
+        for item in resistance_items:
+            if item:  # Skip empty items
+                level_info = parse_level_item(item, 'resistance')
+                if level_info:
+                    result['resistances'].append(level_info)
+    
+    return result
+
+
+def parse_level_item(item, level_type):
+    """
+    Parse a single level item string into structured data.
+    
+    Args:
+        item (str): The level item text (e.g., "5757", "5700-05 (major)")
+        level_type (str): Either 'support' or 'resistance'
+        
+    Returns:
+        dict: Dictionary with price_with_range, price, and severity fields
+    """
+    # Check if the item has (major) label
+    is_major = "(major)" in item
+    item_without_major = item.replace("(major)", "").strip()
+    
+    # Parse the price or range
+    if "-" in item_without_major:
+        # It's a range like "5700-05"
+        range_match = re.match(r'(\d+)-(\d+)', item_without_major)
+        if range_match:
+            start_num = range_match.group(1)
+            end_digits = range_match.group(2)
+            
+            # Handle shortened end number (e.g., "5700-05" means "5700-5705")
+            if len(end_digits) < len(start_num):
+                prefix = start_num[:-len(end_digits)]
+                end_num = prefix + end_digits
+            else:
+                end_num = end_digits
+                
+            price_with_range = f"{start_num}-{end_digits}"
+            # Use the first number for sorting
+            price = float(start_num)
+        else:
+            # If we can't parse the range, skip this item
+            return None
+    else:
+        # It's a single number
+        num_match = re.match(r'(\d+)', item_without_major)
+        if num_match:
+            price_with_range = num_match.group(1)
+            price = float(price_with_range)
+        else:
+            # If we can't parse the number, skip this item
+            return None
+    
+    return {
+        'price_with_range': price_with_range,
+        'price': price,
+        'severity': 'Major' if is_major else '',
+        'type': level_type
+    }
