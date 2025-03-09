@@ -1,5 +1,28 @@
 allow_embedding: false
 db_schema:
+  keylevelsraw:
+    client: none
+    columns:
+    - admin_ui: {order: 0, width: 200}
+      name: price
+      type: number
+    - admin_ui: {order: 1, width: 200}
+      name: notes
+      type: string
+    - admin_ui: {order: 2, width: 200}
+      name: vdline
+      type: number
+    - admin_ui: {order: 3, width: 200}
+      name: vdline_type
+      type: string
+    - admin_ui: {order: 0.5, width: 200}
+      name: severity
+      type: string
+    - admin_ui: {order: -1, width: 200}
+      name: price_with_range
+      type: string
+    server: full
+    title: KeyLevelsRaw
   marketcalendar:
     client: none
     columns:
