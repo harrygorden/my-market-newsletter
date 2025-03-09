@@ -17,9 +17,35 @@ class Layout(LayoutTemplate):
     # Set Form properties and Data Bindings.
     self.init_components(**properties)
     
-    # Force the hamburger menu to show
-    # In Anvil, hamburger menu shows if there's content in left-nav slot
+    # Ensure the navigation panel is visible and properly initialized
+    # This is crucial for the hamburger menu to appear correctly
     self.column_panel_1.visible = True
+    
+    # Add custom CSS to ensure the hamburger menu is always visible
+    # Note: This accesses the Anvil JS runtime to add styles directly to the page
+    anvil.js.call('eval', '''
+      (function() {
+        // Add a style to make hamburger menu more visible if needed
+        var style = document.createElement('style');
+        style.textContent = `
+          .sidebar-toggle {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+          }
+        `;
+        document.head.appendChild(style);
+        
+        // Force the sidebar to be properly initialized on page load
+        setTimeout(function() {
+          var sidebarElements = document.querySelectorAll('.sidebar');
+          if (sidebarElements.length > 0) {
+            // Make sure the page layout knows there's a sidebar
+            document.body.classList.add('has-sidebar');
+          }
+        }, 100);
+      })();
+    ''')
     
     # Set initial content for content_slot (load MarketSummary form by default)
     self.content_panel.add_component(MarketSummary(), slot='content_slot')

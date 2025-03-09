@@ -2,7 +2,7 @@ components:
 - components: []
   layout_properties: {slot: default}
   name: content_panel
-  properties: {background: '', col_widths: '{}', foreground: 'theme:On Primary'}
+  properties: {background: '', col_widths: '{}', foreground: 'theme:On Primary', row_spacing: 0, spacing_above: 0, spacing_below: 0, visible: true}
   type: ColumnPanel
 - layout_properties: {slot: nav-right}
   name: navbar_links
