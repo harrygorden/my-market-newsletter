@@ -194,6 +194,35 @@ def clean_newsletter(raw_body: str) -> str:
     
     return final_text
 
+def find_nearby_vdlines(level, max_distance=3):
+    """
+    Find any vdlines that are within the specified distance of the given level
+    
+    Args:
+        level (float): The price level to check
+        max_distance (int): Maximum distance to consider a match (default: 3)
+        
+    Returns:
+        str: Type of the matching vdline or None if no match found
+    """
+    try:
+        # Convert level to float for numeric comparison
+        level_float = float(level)
+        
+        # Query all vdlines from the app table
+        all_vdlines = app_tables.vdlines.search()
+        
+        # Check each vdline to see if it's within the specified distance
+        for vdline in all_vdlines:
+            vdline_price = float(vdline['Price'])
+            if abs(vdline_price - level_float) <= max_distance:
+                return vdline['Type']
+        
+        return None
+    except Exception as e:
+        print(f"Error finding nearby vdlines: {e}")
+        return None
+
 def parse_email(raw_body: str) -> dict:
     parsed = {}
 
@@ -215,8 +244,21 @@ def parse_email(raw_body: str) -> dict:
         # Sort key_levels_raw in descending order and convert back to strings
         key_levels_raw.sort(reverse=True)
         parsed["KeyLevels"] = '\n'.join(key_levels)
-        # Convert to int if the float has no decimal places, otherwise keep the float
-        parsed["KeyLevelsRaw"] = '\n'.join(str(int(num)) if num.is_integer() else str(num) for num in key_levels_raw)
+        
+        # Format KeyLevelsRaw with nearby vdline information
+        formatted_key_levels_raw = []
+        for num in key_levels_raw:
+            # Convert to int if the float has no decimal places, otherwise keep the float
+            level_str = str(int(num)) if num.is_integer() else str(num)
+            
+            # Check if this level is near any vdline
+            vdline_type = find_nearby_vdlines(num)
+            if vdline_type:
+                level_str = f"{level_str} ({vdline_type})"
+                
+            formatted_key_levels_raw.append(level_str)
+            
+        parsed["KeyLevelsRaw"] = '\n'.join(formatted_key_levels_raw)
     else:
         parsed["KeyLevels"] = ""
         parsed["KeyLevelsRaw"] = ""

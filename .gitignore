@@ -3,4 +3,5 @@
 __pycache__
 .anvil-data
 db_tools*
-DB_Utils*
+.env
+ES1VoodooLines.csv
