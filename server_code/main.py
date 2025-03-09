@@ -167,24 +167,27 @@ def get_all_lines_data():
         # Print debugging information about what was retrieved
         print(f"Retrieved {len(key_levels)} rows from keylevelsraw table")
         if len(key_levels) > 0:
-            print(f"First row keys: {key_levels[0].keys()}")
+            print(f"First row column names: {list(key_levels[0].keys())}")
+            print(f"First row values: {list(key_levels[0].values())}")
         
         # Convert rows to a list of dictionaries for the data grid
-        # The data_key values in the DataGrid now match the table field names exactly
+        # The field names in the keylevelsraw table are: 
+        # price_with_range, price, severity, type, note, vdline, vdline_type
         result = []
         for row in key_levels:
             result.append({
-                "price": row.get("price"),
-                "major": row.get("major"),
-                "notes": row.get("notes"),
-                "vdline": row.get("vdline"),
-                "vdline_type": row.get("vdline_type")
+                "price": row.get("price_with_range") or row.get("price", ""),
+                "major": row.get("severity", ""),
+                "notes": row.get("note", ""),
+                "vdline": row.get("vdline", ""),
+                "vdline_type": row.get("vdline_type", "")
             })
         
         # Print debug info about the result
         print(f"Returning {len(result)} formatted rows")
         if len(result) > 0:
             print(f"First result item keys: {result[0].keys()}")
+            print(f"First result item values: {list(result[0].values())}")
             
         # Return the list of dictionaries
         return result
@@ -192,6 +195,47 @@ def get_all_lines_data():
         print(f"Error retrieving data from keylevelsraw: {str(e)}")
         # Return an empty list in case of error
         return []
+
+
+@anvil.server.callable
+def debug_keylevelsraw_table():
+    """
+    Debug function to directly check the contents of the keylevelsraw table
+    and print detailed information about each row.
+    
+    Returns:
+        dict: Debug information about the table
+    """
+    try:
+        # Get all rows from the keylevelsraw table
+        rows = app_tables.keylevelsraw.search()
+        row_count = len(rows)
+        
+        print(f"=== DEBUG: keylevelsraw table ===")
+        print(f"Found {row_count} rows in keylevelsraw table")
+        
+        # Get column names from the first row if available
+        column_names = []
+        if row_count > 0:
+            column_names = list(rows[0].keys())
+            print(f"Column names: {column_names}")
+        
+        # Print details of each row
+        for i, row in enumerate(rows):
+            print(f"Row {i+1}:")
+            for col in column_names:
+                print(f"  {col}: {row[col]}")
+            print("---")
+        
+        return {
+            "row_count": row_count,
+            "column_names": column_names,
+            "sample_rows": [{col: row[col] for col in column_names} for row in rows[:3]] if row_count > 0 else []
+        }
+        
+    except Exception as e:
+        print(f"Error in debug_keylevelsraw_table: {str(e)}")
+        return {"error": str(e)}
 
 
 if __name__ == "__main__":
