@@ -5,37 +5,27 @@ components:
       name: title
       properties: {align: center, bold: true, font_size: 73, foreground: 'theme:Secondary', italic: false, text: All the Lines, underline: true}
       type: Label
-    - layout_properties: {grid_position: 'AFJMNH,LGJXBX'}
-      name: rich_text_timing_detail
-      properties: {align: center, foreground: 'theme:On Primary Container'}
-      type: RichText
     - components:
-      - layout_properties: {grid_position: 'DLUXWZ,DLQTGL'}
-        name: label_market_events
-        properties: {align: center, bold: false, font_size: 24, foreground: 'theme:On Secondary Container', text: Placeholder for market events header, underline: true}
-        type: Label
-      - layout_properties: {grid_position: 'DPPUSJ,EHAWIH'}
-        name: rich_text_upcoming_events
-        properties: {align: center, font_size: 14, foreground: 'theme:On Primary Container'}
-        type: RichText
-      layout_properties: {grid_position: 'NGENRY,FPOMFI'}
-      name: outlined_card_3
-      properties: {role: outlined-card}
-      type: ColumnPanel
-    - components:
-      - layout_properties: {grid_position: 'CAUBFT,EFNBPW'}
-        name: label_2
-        properties: {align: center, font_size: 24, foreground: 'theme:On Primary Container', text: Newsletter Analysis, underline: true}
-        type: Label
-      - layout_properties: {grid_position: 'RIOTCO,NANDSS'}
-        name: rich_text_summary
-        properties: {foreground: 'theme:On Primary Container'}
-        type: RichText
-      layout_properties: {grid_position: 'MYHRFI,JCFDPU'}
+      - components:
+        - name: repeating_panel_1
+          properties: {item_template: AllLines.RowTemplate1}
+          type: RepeatingPanel
+        layout_properties: {full_width_row: true, grid_position: 'MXCJNQ,POYPWI'}
+        name: data_grid_all_lines
+        properties:
+          columns:
+          - {data_key: price, expand: false, id: JKSDUP, title: Price, width: 167}
+          - {data_key: major, expand: false, id: VJQQOR, title: Major, width: 201}
+          - {data_key: notes, expand: false, id: OJLQEN, title: Notes, width: 600}
+          - {data_key: vdline, id: PYLJRP, title: VDLine}
+          - {data_key: vdline_type, id: BDUAUV, title: VDLine Type}
+          foreground: theme:On Background
+        type: DataGrid
+      layout_properties: {full_width_row: true, grid_position: 'MYHRFI,JCFDPU'}
       name: outlined_card_2
       properties: {role: outlined-card}
       type: ColumnPanel
-    layout_properties: {grid_position: 'DSNRLW,BIHRFU'}
+    layout_properties: {full_width_row: true, grid_position: 'DSNRLW,BIHRFU'}
     name: outlined_card_1
     properties: {role: outlined-card}
     type: ColumnPanel
