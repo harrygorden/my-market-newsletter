@@ -195,6 +195,86 @@ def get_all_lines_data():
         return []
 
 
+@anvil.server.background_task
+@anvil.server.callable
+def refresh_all_lines_data_bg():
+    """
+    Background task version of get_all_lines_data with enhanced logging.
+    
+    Returns:
+        list: A list of dictionaries representing each row in the keylevelsraw table
+    """
+    try:
+        print("=== Starting refresh_all_lines_data_bg background task ===")
+        
+        # Get all rows from the keylevelsraw table
+        print("Querying keylevelsraw table...")
+        key_levels = app_tables.keylevelsraw.search()
+        
+        # Print detailed debugging information
+        row_count = len(key_levels)
+        print(f"Retrieved {row_count} rows from keylevelsraw table")
+        
+        # Print all available tables for debugging
+        all_tables = [table.__name__ for table in dir(app_tables) if not table.startswith('_')]
+        print(f"Available tables: {all_tables}")
+        
+        # Print table schema for keylevelsraw
+        if 'keylevelsraw' in all_tables:
+            print("keylevelsraw table schema:")
+            try:
+                schema = app_tables.keylevelsraw.list_columns()
+                print(f"Table columns: {schema}")
+            except Exception as e:
+                print(f"Error getting schema: {str(e)}")
+        
+        if row_count > 0:
+            print("First row details:")
+            first_row = key_levels[0]
+            print(f"First row column names: {list(first_row.keys())}")
+            print(f"First row values: {list(first_row.values())}")
+            for key, value in first_row.items():
+                print(f"  {key}: {value} (type: {type(value).__name__})")
+        else:
+            print("No rows found in keylevelsraw table. This may indicate:")
+            print("1. The extract_and_store_key_levels function did not insert any data")
+            print("2. The table exists but is empty")
+            print("3. There might be permission issues accessing the table")
+        
+        # Convert rows to a list of dictionaries for the data grid
+        print("Converting database rows to dictionary format for DataGrid...")
+        result = []
+        for row in key_levels:
+            row_dict = {
+                "price": row.get("price_with_range") or row.get("price", ""),
+                "major": row.get("severity", ""),
+                "notes": row.get("note", ""),
+                "vdline": row.get("vdline", ""),
+                "vdline_type": row.get("vdline_type", "")
+            }
+            result.append(row_dict)
+            # Print for the first few rows to debug data transformation
+            if len(result) <= 3:
+                print(f"Transformed row {len(result)}: {row_dict}")
+        
+        # Print debug info about the result
+        print(f"Returning {len(result)} formatted rows")
+        if len(result) > 0:
+            print(f"First result item keys: {result[0].keys()}")
+            print(f"Sample data: {result[:3]}")
+            
+        print("=== refresh_all_lines_data_bg completed successfully ===")
+        # Return the list of dictionaries
+        return result
+    except Exception as e:
+        print(f"=== ERROR in refresh_all_lines_data_bg: {str(e)} ===")
+        print(f"Error type: {type(e).__name__}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        # Return an empty list in case of error to avoid crashing the client
+        return {"error": str(e)}
+
+
 @anvil.server.callable
 def debug_keylevelsraw_table():
     """
