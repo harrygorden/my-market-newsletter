@@ -143,7 +143,7 @@ def bulk_upsert_data(table_name, data_json):
 @anvil.server.callable
 def add_vd_lines(records_list):
     """
-    Add records to the VDLines table
+    Add records to the vdlines table
     
     Args:
         records_list (list): List of dictionaries containing Price and Type values
@@ -154,15 +154,15 @@ def add_vd_lines(records_list):
     try:
         rows_added = 0
         
-        # Create VDLines table if it doesn't exist yet
-        if not hasattr(app_tables, 'VDLines'):
+        # Create vdlines table if it doesn't exist yet
+        if not hasattr(app_tables, 'vdlines'):
             # Table doesn't exist yet in this app - create it
-            print("VDLines table doesn't exist yet - this is expected on first run")
+            print("vdlines table doesn't exist yet - this is expected on first run")
             pass
             
         for record in records_list:
             # Add each record to the table
-            app_tables.VDLines.add_row(**record)
+            app_tables.vdlines.add_row(**record)
             rows_added += 1
             
         return rows_added
