@@ -1,4 +1,4 @@
-from ._anvil_designer import TomorrowsPlanTemplate
+from ._anvil_designer import MarketSummaryTemplate
 from anvil import *
 import anvil.tables as tables
 import anvil.tables.query as q
@@ -9,7 +9,7 @@ import anvil.server
 from datetime import datetime, timezone
 
 
-class TomorrowsPlan(TomorrowsPlanTemplate):
+class MarketSummary(MarketSummaryTemplate):
   def __init__(self, **properties):
     # Set Form properties and Data Bindings.
     self.init_components(**properties)
