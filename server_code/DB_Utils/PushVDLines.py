@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 import anvil.server
 
 # Import utility functions
-from DB_Utils import connect_to_anvil, write_dataframe_to_table
+from .DB_Utils import connect_to_anvil, write_dataframe_to_table
 
 def main():
     # Setup working directory for relative paths
