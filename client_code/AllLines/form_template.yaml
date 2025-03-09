@@ -20,23 +20,7 @@ components:
       name: debug_button
       properties: {background: 'theme:Tertiary', foreground: 'theme:On Tertiary', icon: 'fa:bug', text: Debug Table}
       type: Button
-    - components:
-      - components:
-        - layout_properties: {}
-          name: repeating_panel_1
-          properties: {item_template: AllLines.RowTemplate1, role: null}
-          type: RepeatingPanel
-        layout_properties: {full_width_row: true, grid_position: 'MXCJNQ,POYPWI'}
-        name: data_grid_all_lines
-        properties:
-          columns:
-          - {data_key: price, id: NRRSTQ, title: Price}
-          - {data_key: major, id: XGEQVJ, title: Major}
-          - {data_key: notes, id: WUBNDU, title: Notes}
-          - {data_key: vdline, id: IUSVFP, title: VD Line}
-          - {data_key: vdline_type, id: JNGBYV, title: VD Type}
-          foreground: theme:On Background
-        type: DataGrid
+    - components: []
       layout_properties: {full_width_row: true, grid_position: 'MYHRFI,JCFDPU'}
       name: outlined_card_2
       properties: {role: outlined-card}
