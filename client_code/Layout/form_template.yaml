@@ -11,7 +11,7 @@ components:
 - components:
   - components:
     - event_bindings: {click: outlined_button_link_marketsummary_click}
-      layout_properties: {grid_position: 'EHOYXO,XACMZC'}
+      layout_properties: {full_width_row: true, grid_position: 'EHOYXO,XACMZC'}
       name: outlined_button_link_marketsummary
       properties:
         background: theme:Primary
@@ -22,12 +22,12 @@ components:
           Summary
       type: Button
     - event_bindings: {click: outlined_button_alllines_click}
-      layout_properties: {grid_position: 'OHJHRA,YFYOFH'}
+      layout_properties: {full_width_row: true, grid_position: 'OHJHRA,YFYOFH'}
       name: outlined_button_alllines
       properties: {background: 'theme:Primary', foreground: 'theme:Primary Container', role: outlined-button, text: All Lines}
       type: Button
     layout_properties: {grid_position: 'OLMXOG,YKGITF'}
-    name: outlined_card_4
+    name: outlined_card_navigation
     properties: {role: outlined-card}
     type: ColumnPanel
   layout_properties: {slot: left-nav}
