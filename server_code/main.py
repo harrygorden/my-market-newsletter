@@ -151,6 +151,38 @@ def print_data_to_form():
         'upcoming_events': "No upcoming events available"
     }
 
+
+@anvil.server.callable
+def get_all_lines_data():
+    """
+    Retrieves all rows from the keylevelsraw table for display in the AllLines form.
+    
+    Returns:
+        list: A list of dictionaries representing each row in the keylevelsraw table
+    """
+    try:
+        # Get all rows from the keylevelsraw table
+        key_levels = app_tables.keylevelsraw.search()
+        
+        # Convert rows to a list of dictionaries for the data grid
+        result = []
+        for row in key_levels:
+            result.append({
+                "price": row.get("price"),
+                "major": row.get("major"),
+                "notes": row.get("notes"),
+                "vdline": row.get("vdline"),
+                "vdline_type": row.get("vdline_type")
+            })
+        
+        # Return the list of dictionaries
+        return result
+    except Exception as e:
+        print(f"Error retrieving data from keylevelsraw: {str(e)}")
+        # Return an empty list in case of error
+        return []
+
+
 if __name__ == "__main__":
     # Launch the newsletter processing as a background task
     task = anvil.server.launch_background_task('process_newsletter') 
