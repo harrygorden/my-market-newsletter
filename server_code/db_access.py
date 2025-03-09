@@ -8,6 +8,8 @@ both raw email data and parsed sections into the relevant Data Tables.
 
 import anvil.tables as tables
 from anvil.tables import app_tables
+import anvil.server
+import json
 
 
 def newsletter_exists(newsletter_id: str) -> bool:
@@ -94,4 +96,45 @@ def delete_most_recent_records() -> tuple[str | None, str | None]:
         return newsletter_id, None
         
     except Exception as e:
-        return None, f"Error deleting records: {str(e)}" 
+        return None, f"Error deleting records: {str(e)}"
+
+
+@anvil.server.callable
+def bulk_upsert_data(table_name, data_json):
+    """
+    Bulk insert data into a table from a JSON string
+    
+    Args:
+        table_name (str): Name of the Anvil data table
+        data_json (str): JSON string containing records to insert
+        
+    Returns:
+        dict: Summary of operation results
+    """
+    try:
+        # Parse the JSON data
+        records = json.loads(data_json)
+        
+        # Get the table object
+        table = getattr(app_tables, table_name)
+        
+        # Insert all the records
+        rows_added = 0
+        rows_updated = 0
+        
+        # Add all rows
+        for record in records:
+            table.add_row(**record)
+            rows_added += 1
+        
+        return {
+            'rows_added': rows_added,
+            'rows_updated': rows_updated
+        }
+    except Exception as e:
+        print(f"Error in bulk_upsert_data: {str(e)}")
+        return {
+            'error': str(e),
+            'rows_added': 0,
+            'rows_updated': 0
+        }
