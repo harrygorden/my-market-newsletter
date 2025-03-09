@@ -71,6 +71,7 @@ EMAIL_TEMPLATE = """
         /* Events section */
         .events-section {
             background-color: #f8f9fa;
+            text-align: center;
         }
         
         /* Footer */
@@ -96,17 +97,11 @@ EMAIL_TEMPLATE = """
         .key-levels-raw {
             font-size: 1.1em;
             font-weight: bold;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            display: block;
             padding: 12px;
             background-color: #f1f1f1;
             border-left: 4px solid #2c3e50;
-        }
-        
-        .key-levels-raw .level {
-            margin-right: 10px;
-            white-space: nowrap;
+            line-height: 1.8;
         }
         
         .key-levels-detail {
@@ -120,10 +115,19 @@ EMAIL_TEMPLATE = """
         
         .events-list {
             margin: 0;
-            padding-left: 15px;
+            padding-left: 0;
+            list-style-type: none;
         }
         
-        .events-list li {
+        .event-day {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .event-item {
             margin-bottom: 5px;
         }
         
@@ -179,25 +183,38 @@ def format_email_content(summary_data):
     """
     Formats the email content using the HTML template.
     """
-    # Format key levels raw as HTML spans
+    # Format key levels raw as separate lines
     raw_levels = summary_data.get('key_levels_raw', 'No key levels available')
     if raw_levels != 'No key levels available':
         levels_html = ''
         for level in raw_levels.split('\n'):
             if level.strip():
-                levels_html += f'<span class="level">{level}</span>'
+                levels_html += f'{level}<br>'
         key_levels_raw_html = levels_html
     else:
         key_levels_raw_html = raw_levels
     
-    # Format upcoming events as a list
+    # Format upcoming events as a list with days highlighted
     upcoming_events = summary_data.get('upcoming_events', 'No upcoming events available')
     if upcoming_events != 'No upcoming events available':
         events_lines = upcoming_events.strip().split('\n')
         events_html = '<ul class="events-list">'
+        
+        current_day = None
         for line in events_lines:
-            if line.strip():
-                events_html += f'<li>{line.strip()}</li>'
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Check if this is a day header (contains day and date in parentheses)
+            if '(' in line and ')' in line and any(day in line for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']):
+                if current_day:  # Add spacing between days
+                    events_html += '<li style="height: 10px;"></li>'
+                current_day = line
+                events_html += f'<li class="event-day">{line}</li>'
+            else:
+                events_html += f'<li class="event-item">{line}</li>'
+        
         events_html += '</ul>'
     else:
         events_html = '<p>No upcoming events available</p>'
@@ -317,36 +334,98 @@ def get_latest_summary():
     else:
         formatted_levels = 'No key levels details available'
     
-    # Format upcoming events with proper line breaks
+    # Format upcoming events with proper line breaks and highlighting days
     upcoming_events = latest['upcoming_events'] if latest['upcoming_events'] else ''
     if upcoming_events:
-        # Split events by day
+        # Process the events to format them better by day
         import re
-        # Find day headers and format them
-        events_list = []
+        
+        # Find day headers (e.g., "Tuesday (3/11)")
+        day_pattern = re.compile(r'([A-Za-z]+)\s*\((\d+/\d+)\)')
+        
+        # Reorganize events by day
+        days_and_events = {}
+        current_day = None
+        
         for line in upcoming_events.split('\n'):
             line = line.strip()
-            if line:
-                events_list.append(line)
+            if not line:
+                continue
+                
+            # Check if this is a day header
+            day_match = day_pattern.search(line)
+            if day_match:
+                day_name = day_match.group(1)
+                day_date = day_match.group(2)
+                current_day = f"{day_name} ({day_date})"
+                days_and_events[current_day] = []
+            elif current_day and " - " in line:
+                days_and_events[current_day].append(line)
         
-        formatted_events = '\n'.join(events_list)
+        # Format the reorganized events
+        formatted_events_lines = []
+        for day, events in days_and_events.items():
+            formatted_events_lines.append(day)
+            formatted_events_lines.extend(events)
+            # Add an empty line between days for spacing
+            if day != list(days_and_events.keys())[-1]:  # Not the last day
+                formatted_events_lines.append("")
+        
+        formatted_events = '\n'.join(formatted_events_lines)
     else:
         formatted_events = 'No upcoming events available'
     
-    # Format the summary to remove duplicate section headers
+    # Format the summary to remove duplicate section headers and key levels information
     summary_text = latest['summary'] if latest['summary'] else ''
     if summary_text:
-        # Remove section headers that will already be in our email template
-        summary_text = summary_text.replace('MARKET SUMMARY', '')
+        # Find the real market summary section
+        import re
         
-        # Remove any lines that start with KEY LEVELS as we'll handle those separately
+        # Remove all KEY LEVELS sections
         lines = summary_text.split('\n')
-        cleaned_lines = []
-        for line in lines:
-            if not line.strip().startswith('KEY LEVELS'):
-                cleaned_lines.append(line)
+        clean_lines = []
         
-        summary_text = '\n'.join(cleaned_lines).strip()
+        # Skip state
+        skip_mode = False
+        
+        for line in lines:
+            # If we see KEY LEVELS, start skipping
+            if 'KEY LEVELS' in line:
+                skip_mode = True
+                continue
+                
+            # If we see "This week was" or "MARKET SUMMARY", we've reached the actual summary
+            if line.strip().startswith('This week was') or line.strip() == 'MARKET SUMMARY':
+                skip_mode = False
+            
+            # Skip lines with price:description pattern (likely key level details)
+            if re.match(r'^\d+:', line.strip()):
+                continue
+                
+            # Skip lines that are just digits or digits with brackets (key levels)
+            if re.match(r'^\d+(\s+\[\w+\s+at\s+\d+\])?$', line.strip()):
+                continue
+                
+            if not skip_mode:
+                # Remove section header
+                line = line.replace('MARKET SUMMARY', '')
+                if line.strip():
+                    clean_lines.append(line.strip())
+        
+        # Find where the real summary starts (after all the key levels info)
+        trading_plan_index = -1
+        for i, line in enumerate(clean_lines):
+            if 'TRADING PLAN' in line:
+                trading_plan_index = i
+                break
+        
+        # Get everything between the start and TRADING PLAN
+        if trading_plan_index > 0:
+            summary_text = '\n'.join(clean_lines[:trading_plan_index])
+        else:
+            summary_text = '\n'.join(clean_lines)
+            
+        summary_text = summary_text.strip()
     
     return {
         'summary': summary_text,
