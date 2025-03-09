@@ -28,12 +28,14 @@ class Layout(LayoutTemplate):
     
   def outlined_button_link_marketsummary_click(self, **event_args):
     """This method is called when the Market Summary button is clicked"""
-    # Clear the current content in the slot and add the MarketSummary form
-    self.content_panel.clear_slot('content_slot')
+    # Clear the current content by removing all components from the panel
+    self.content_panel.clear()
+    # Add the MarketSummary form
     self.content_panel.add_component(MarketSummary(), slot='content_slot')
 
   def outlined_button_alllines_click(self, **event_args):
     """This method is called when the All Lines button is clicked"""
-    # Clear the current content in the slot and add the AllLines form
-    self.content_panel.clear_slot('content_slot')
+    # Clear the current content by removing all components from the panel
+    self.content_panel.clear()
+    # Add the AllLines form
     self.content_panel.add_component(AllLines(), slot='content_slot')
