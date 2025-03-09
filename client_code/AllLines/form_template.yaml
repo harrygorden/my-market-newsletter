@@ -6,7 +6,7 @@ components:
       properties: {align: center, bold: true, font_size: 73, foreground: 'theme:Secondary', italic: false, text: All the Lines, underline: true}
       type: Label
     - event_bindings: {click: refresh_button_click}
-      layout_properties: {grid_position: 'WCMIMC,QVRZMA'}
+      layout_properties: {grid_position: 'VSKOQG,ASPSFP'}
       name: refresh_button
       properties: {background: 'theme:Primary', foreground: 'theme:On Primary', icon: 'fa:refresh', text: Refresh Data}
       type: Button
