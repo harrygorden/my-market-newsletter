@@ -1,29 +1,24 @@
 components:
-- name: price_label
-  properties: {text: '', bold: true}
+- layout_properties: {column: UQJOXB}
+  name: price_label
+  properties: {bold: true, text: ''}
   type: Label
-  layout_properties: {column: UQJOXB}
-
-- name: major_label
+- layout_properties: {column: KEDQWZ}
+  name: major_label
   properties: {text: ''}
   type: Label
-  layout_properties: {column: KEDQWZ}
-
-- name: notes_label
+- layout_properties: {column: ZUUKXL}
+  name: notes_label
   properties: {text: ''}
   type: Label
-  layout_properties: {column: ZUUKXL}
-
-- name: vdline_label
+- layout_properties: {column: BYNGAY}
+  name: vdline_label
   properties: {text: ''}
   type: Label
-  layout_properties: {column: BYNGAY}
-
-- name: vdline_type_label
+- layout_properties: {column: DZZRNN}
+  name: vdline_type_label
   properties: {text: ''}
   type: Label
-  layout_properties: {column: DZZRNN}
-
 container:
   event_bindings: {refreshing_data_bindings: form_refreshing_data_bindings}
   type: DataRowPanel

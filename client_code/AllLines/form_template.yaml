@@ -29,11 +29,13 @@ components:
         name: data_grid_all_lines
         properties:
           columns:
-          - {data_key: price, expand: false, id: UQJOXB, title: Price, width: 151}
-          - {data_key: major, expand: false, id: KEDQWZ, title: Major, width: 102}
-          - {data_key: notes, expand: false, id: ZUUKXL, title: Note, width: 898}
-          - {data_key: vdline, id: BYNGAY, title: VDLine}
-          - {data_key: vdline_type, id: DZZRNN, title: VDLine Type}
+          - {data_key: price_with_range, id: NRRSTQ, title: price_with_range}
+          - {data_key: price, id: KOSENN, title: price}
+          - {data_key: severity, id: XGEQVJ, title: severity}
+          - {data_key: note, id: WUBNDU, title: note}
+          - {data_key: vdline, id: IUSVFP, title: vdline}
+          - {data_key: vdline_type, id: JNGBYV, title: vdline_type}
+          - {data_key: type, id: RBMVYE, title: type}
           foreground: theme:On Background
         type: DataGrid
       layout_properties: {full_width_row: true, grid_position: 'MYHRFI,JCFDPU'}
