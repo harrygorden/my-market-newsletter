@@ -190,7 +190,23 @@ def get_latest_summary():
     
     # Format raw levels (numbers) on separate lines
     if key_levels_raw:
-        formatted_raw = '\n'.join(num.strip() for num in key_levels_raw.split() if num.strip())
+        # Process raw key levels to keep price and type together
+        tokens = [num.strip() for num in key_levels_raw.split() if num.strip()]
+        formatted_lines = []
+        
+        i = 0
+        while i < len(tokens):
+            # Check if the current token is a number and the next token is in parentheses
+            if i + 1 < len(tokens) and tokens[i].isdigit() and tokens[i+1].startswith('(') and tokens[i+1].endswith(')'):
+                # Combine price with type
+                formatted_lines.append(f"{tokens[i]} {tokens[i+1]}")
+                i += 2
+            else:
+                # Handle single tokens (likely just a price)
+                formatted_lines.append(tokens[i])
+                i += 1
+        
+        formatted_raw = '\n'.join(formatted_lines)
     else:
         formatted_raw = 'No key levels available'
     
