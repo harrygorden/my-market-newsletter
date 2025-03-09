@@ -24,78 +24,62 @@ class AllLines(AllLinesTemplate):
       notification = Notification("Loading data...", timeout=3)
       notification.show()
       
-      # First run the debug function to see what's in the database
-      debug_info = anvil.server.call("debug_keylevelsraw_table")
-      print(f"Debug info: {debug_info}")
-      
       # Fetch data directly from the server
-      print("Calling server to get data...")
-      all_lines_data = anvil.server.call("get_all_lines_data")
+      print("Calling server to get keylevels data...")
+      rows = anvil.server.call("get_keylevels")
       
       # Debug: Print what we got back from the server
-      print(f"Received {len(all_lines_data)} items from server")
-      if len(all_lines_data) > 0:
-        print(f"Sample data: {all_lines_data[0]}")
+      row_count = len(rows)
+      print(f"Received {row_count} rows from server")
+      
+      if row_count > 0:
+        # Print sample of first row for debugging
+        first_row = rows[0]
+        print(f"Sample data (first row):")
+        print(f"  Column names: {list(first_row)}")
+        for key, value in first_row.items():
+          print(f"  {key}: {value}")
         
-        # In Anvil, the DataGrid itself takes the items directly
-        # Set the data to the DataGrid directly (this is the correct way)
-        self.data_grid_all_lines.items = all_lines_data
-        print(f"Set {len(all_lines_data)} items to data_grid_all_lines")
+        # Map the database fields to what the UI expects
+        # This handles the mapping from database field names to UI field names
+        # (as noted in the memory about field mappings)
+        items = []
+        for row in rows:
+          item = {
+            # Use price_with_range if available, fall back to price if not
+            "price": row.get("price_with_range") or row.get("price", ""),
+            # Map severity to major
+            "major": row.get("severity", ""),
+            # Map note to notes
+            "notes": row.get("note", ""),
+            "vdline": row.get("vdline", ""),
+            "vdline_type": row.get("vdline_type", "")
+          }
+          items.append(item)
         
-        notification = Notification(f"Loaded {len(all_lines_data)} key levels", timeout=3)
+        # Set the mapped items to the repeating panel
+        self.repeating_panel_1.items = items
+        print(f"Set {len(items)} items to repeating_panel_1")
+        
+        notification = Notification(f"Loaded {len(items)} key levels", timeout=3)
         notification.show()
       else:
         # Show notification if no data
-        notification = Notification(f"No data found in keylevelsraw table. Row count from debug: {debug_info.get('row_count', 0)}", timeout=5)
+        notification = Notification(f"No data found in KeyLevelsRaw table. Row count: {row_count}", timeout=5)
         notification.show()
-        # Clear the data grid
-        self.data_grid_all_lines.items = []
+        # Clear the repeating panel
+        self.repeating_panel_1.items = []
         
     except Exception as e:
       # Handle any errors loading the data
       print(f"Error in AllLines.refresh_data: {str(e)}")
       notification = Notification(f"Error loading data: {str(e)}", timeout=5)
       notification.show()
-      
-  def force_refresh_data(self):
-    """Force a complete refresh of data directly from the server"""
-    try:
-      # Show a loading notification
-      notification = Notification("Forcing data refresh...", timeout=3)
-      notification.show()
-      
-      # Call the force refresh function on the server
-      print("Calling force_refresh_all_lines...")
-      all_lines_data = anvil.server.call("force_refresh_all_lines")
-      
-      # Debug: Print what we got back from the server
-      print(f"Force refresh returned {len(all_lines_data)} items")
-      if len(all_lines_data) > 0:
-        print(f"First item: {all_lines_data[0]}")
-        
-        # Set the data to the DataGrid directly
-        self.data_grid_all_lines.items = all_lines_data
-        print(f"Set {len(all_lines_data)} items to data_grid_all_lines")
-        
-        notification = Notification(f"Loaded {len(all_lines_data)} key levels from force refresh", timeout=3)
-        notification.show()
-      else:
-        # Show notification if no data
-        notification = Notification("No data found in keylevelsraw table after force refresh.", timeout=5)
-        notification.show()
-        # Clear the data grid
-        self.data_grid_all_lines.items = []
-        
-    except Exception as e:
-      # Handle any errors loading the data
-      print(f"Error in force_refresh_data: {str(e)}")
-      notification = Notification(f"Error during force refresh: {str(e)}", timeout=5)
-      notification.show()
   
   def refresh_button_click(self, **event_args):
     """Called when the Refresh Data button is clicked"""
     # Clear any existing data
-    self.data_grid_all_lines.items = []
+    self.repeating_panel_1.items = []
     
     # Force a refresh from the server
     self.refresh_data()
@@ -103,10 +87,10 @@ class AllLines(AllLinesTemplate):
   def force_refresh_button_click(self, **event_args):
     """Called when the Force Refresh button is clicked"""
     # Clear any existing data
-    self.data_grid_all_lines.items = []
+    self.repeating_panel_1.items = []
     
-    # Call the force refresh method
-    self.force_refresh_data()
+    # Call the refresh method - it will get fresh data from the server
+    self.refresh_data()
     
   def debug_keylevelsraw(self):
     """Run a debug check on the keylevelsraw table"""
@@ -115,66 +99,40 @@ class AllLines(AllLinesTemplate):
       notification = Notification("Running debug check...", timeout=2)
       notification.show()
       
-      # Call the debug function
-      debug_info = anvil.server.call("debug_keylevelsraw_table")
+      # Get the rows directly from the server
+      rows = anvil.server.call("get_keylevels")
+      row_count = len(rows)
       
-      # Print the debug info to the console
+      # Print debug info
       print("=== DEBUG INFO FOR KEYLEVELSRAW TABLE ===")
-      print(f"Row count: {debug_info.get('row_count', 0)}")
-      print(f"Column names: {debug_info.get('column_names', [])}")
+      print(f"Row count: {row_count}")
       
-      # Display sample rows if available
-      sample_rows = debug_info.get('sample_rows', [])
-      if sample_rows:
+      if row_count > 0:
+        # Get column names from first row
+        first_row = rows[0]
+        column_names = list(first_row)
+        print(f"Column names: {column_names}")
+        
+        # Display sample rows
         print("Sample rows:")
-        for i, row in enumerate(sample_rows):
-          print(f"Row {i+1}: {row}")
+        for i, row in enumerate(rows[:3]):  # Show first 3 rows
+          print(f"Row {i+1}:")
+          for col in column_names:
+            print(f"  {col}: {row[col]}")
+      else:
+        print("No rows found in KeyLevelsRaw table")
       
-      # Check if there are any warnings
-      warnings = debug_info.get('field_mapping_warnings', [])
-      if warnings:
-        print("Field mapping warnings:")
-        for warning in warnings:
-          print(f" - {warning}")
-          
       # Display a notification with the row count
-      notification = Notification(f"Debug complete. Found {debug_info.get('row_count', 0)} rows in keylevelsraw table.", timeout=5)
+      notification = Notification(f"Debug complete. Found {row_count} rows in KeyLevelsRaw table.", timeout=5)
       notification.show()
-      
-      return debug_info
       
     except Exception as e:
       # Handle any errors
-      print(f"Error debugging keylevelsraw table: {str(e)}")
+      print(f"Error debugging KeyLevelsRaw table: {str(e)}")
       notification = Notification(f"Error debugging table: {str(e)}", timeout=5)
       notification.show()
 
   def debug_button_click(self, **event_args):
     """Called when the Debug Table button is clicked"""
     # Run the debug method
-    debug_info = self.debug_keylevelsraw()
-    
-    # After debugging the table, also debug the UI components
-    print("\n=== DEBUGGING UI COMPONENTS ===")
-    try:
-      # Check data grid components
-      print(f"DataGrid available: {hasattr(self, 'data_grid_all_lines')}")
-      if hasattr(self, 'data_grid_all_lines'):
-        print(f"DataGrid type: {type(self.data_grid_all_lines).__name__}")
-        
-        # Try setting data directly to test
-        all_lines_data = anvil.server.call("get_all_lines_data")
-        print(f"Retrieved {len(all_lines_data)} rows of test data")
-        
-        # Set data to DataGrid directly
-        self.data_grid_all_lines.items = all_lines_data
-        print(f"Set {len(all_lines_data)} items directly to data_grid_all_lines")
-        
-        # Validate data assignment
-        if hasattr(self.data_grid_all_lines, 'items'):
-          print(f"DataGrid now has {len(self.data_grid_all_lines.items)} items")
-      else:
-        print("WARNING: data_grid_all_lines component not found! Check the component name.")
-      
-    except Exception as e:
-      print(f"Error debugging UI components: {str(e)}")
+    self.debug_keylevelsraw()

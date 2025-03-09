@@ -383,6 +383,15 @@ def debug_keylevelsraw_table():
         return {"error": str(e)}
 
 
+@anvil.server.callable
+def get_keylevels():
+    """
+    Simple function to fetch all data from the KeyLevelsRaw table.
+    Returns the raw rows that can be mapped in the UI as needed.
+    """
+    return app_tables.KeyLevelsRaw.search()
+
+
 if __name__ == "__main__":
     # Launch the newsletter processing as a background task
     task = anvil.server.launch_background_task('process_newsletter') 
