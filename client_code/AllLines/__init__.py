@@ -58,8 +58,8 @@ class AllLines(AllLinesTemplate):
           items.append(item)
         
         # Set the mapped items to the repeating panel
-        self.repeating_panel_1.items = items
-        print(f"Set {len(items)} items to repeating_panel_1")
+        self.data_grid_all_lines.items = items
+        print(f"Set {len(items)} items to data_grid_all_lines")
         
         notification = Notification(f"Loaded {len(items)} key levels", timeout=3)
         notification.show()
@@ -68,7 +68,7 @@ class AllLines(AllLinesTemplate):
         notification = Notification(f"No data found in keylevelsraw table. Row count: {row_count}", timeout=5)
         notification.show()
         # Clear the repeating panel
-        self.repeating_panel_1.items = []
+        self.data_grid_all_lines.items = []
         
     except Exception as e:
       # Handle any errors loading the data
@@ -79,7 +79,7 @@ class AllLines(AllLinesTemplate):
   def refresh_button_click(self, **event_args):
     """Called when the Refresh Data button is clicked"""
     # Clear any existing data
-    self.repeating_panel_1.items = []
+    self.data_grid_all_lines.items = []
     
     # Force a refresh from the server
     self.refresh_data()
@@ -87,7 +87,7 @@ class AllLines(AllLinesTemplate):
   def force_refresh_button_click(self, **event_args):
     """Called when the Force Refresh button is clicked"""
     # Clear any existing data
-    self.repeating_panel_1.items = []
+    self.data_grid_all_lines.items = []
     
     # Call the refresh method - it will get fresh data from the server
     self.refresh_data()
