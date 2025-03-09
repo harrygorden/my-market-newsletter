@@ -37,30 +37,6 @@ components:
   name: navbar_links
   properties: {}
   type: FlowPanel
-- components:
-  - components:
-    - layout_properties: {grid_position: 'EHOYXO,XACMZC'}
-      name: outlined_button_link_marketsummary
-      properties:
-        background: theme:Primary
-        foreground: theme:Primary Container
-        role: outlined-button
-        text: |-
-          Market
-          Summary
-      type: Button
-    - layout_properties: {grid_position: 'OHJHRA,YFYOFH'}
-      name: outlined_button_alllines
-      properties: {background: 'theme:Primary', foreground: 'theme:Primary Container', role: outlined-button, text: All Lines}
-      type: Button
-    layout_properties: {grid_position: 'OLMXOG,YKGITF'}
-    name: outlined_card_4
-    properties: {role: outlined-card}
-    type: ColumnPanel
-  layout_properties: {slot: left-nav}
-  name: column_panel_1
-  properties: {}
-  type: ColumnPanel
 container:
   properties: {html: '@theme:standard-page.html'}
   type: HtmlTemplate
