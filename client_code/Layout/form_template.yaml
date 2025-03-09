@@ -10,7 +10,8 @@ components:
   type: FlowPanel
 - components:
   - components:
-    - layout_properties: {grid_position: 'EHOYXO,XACMZC'}
+    - event_bindings: {click: outlined_button_link_marketsummary_click}
+      layout_properties: {grid_position: 'EHOYXO,XACMZC'}
       name: outlined_button_link_marketsummary
       properties:
         background: theme:Primary
@@ -20,7 +21,8 @@ components:
           Market
           Summary
       type: Button
-    - layout_properties: {grid_position: 'OHJHRA,YFYOFH'}
+    - event_bindings: {click: outlined_button_alllines_click}
+      layout_properties: {grid_position: 'OHJHRA,YFYOFH'}
       name: outlined_button_alllines
       properties: {background: 'theme:Primary', foreground: 'theme:Primary Container', role: outlined-button, text: All Lines}
       type: Button
@@ -41,5 +43,5 @@ properties: []
 slots:
   content_slot:
     index: 0
-    set_layout_properties: {full_width_row: true, grid_position: 'QRHWPC,HNLFYZ'}
+    set_layout_properties: {full_width_row: true, grid_position: 'EMJSAS,TJJOMQ'}
     target: {name: content_panel, type: container}
