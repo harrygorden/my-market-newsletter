@@ -16,7 +16,11 @@ class Layout(LayoutTemplate):
   def __init__(self, **properties):
     # Set Form properties and Data Bindings.
     self.init_components(**properties)
-
+    
+    # Force the hamburger menu to show
+    # In Anvil, hamburger menu shows if there's content in left-nav slot
+    self.column_panel_1.visible = True
+    
     # Set initial content for content_slot (load MarketSummary form by default)
     self.content_panel.add_component(MarketSummary(), slot='content_slot')
 
