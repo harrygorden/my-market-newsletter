@@ -139,6 +139,11 @@ EMAIL_TEMPLATE = """
             border-bottom: 1px solid #e0e0e0;
             padding-bottom: 3px;
         }
+        
+        .trading-plan {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -167,7 +172,7 @@ EMAIL_TEMPLATE = """
         
         <div class="content-section">
             <h2 class="section-title">Market Summary</h2>
-            <p>{{ summary }}</p>
+            <div>{{ summary }}</div>
         </div>
         
         <div class="footer">
@@ -238,8 +243,29 @@ def format_email_content(summary_data):
     else:
         key_levels_detail_html = '<p>No key levels details available</p>'
     
+    # Format trading plan with proper styling
+    summary = summary_data.get('summary', 'No summary available')
+    if summary != 'No summary available':
+        # Split into sections
+        parts = summary.split('TRADING PLAN')
+        market_summary_html = parts[0].strip()
+        
+        if len(parts) > 1:
+            trading_plan_html = f"""
+            <div class="section-subtitle">Trading Plan</div>
+            <div class="trading-plan">{parts[1].strip()}</div>
+            """
+            full_summary_html = f"""
+            <div>{market_summary_html}</div>
+            {trading_plan_html}
+            """
+        else:
+            full_summary_html = f"<div>{market_summary_html}</div>"
+    else:
+        full_summary_html = "<p>No summary available</p>"
+    
     # Replace template variables
-    html_content = EMAIL_TEMPLATE.replace('{{ summary }}', summary_data.get('summary', 'No summary available'))\
+    html_content = EMAIL_TEMPLATE.replace('{{ summary }}', full_summary_html)\
                                 .replace('{{ timing_detail }}', summary_data.get('timing_detail', 'No timing information available'))\
                                 .replace('{{ upcoming_events }}', events_html)\
                                 .replace('{{ key_levels_raw }}', key_levels_raw_html)\
@@ -412,19 +438,8 @@ def get_latest_summary():
                 if line.strip():
                     clean_lines.append(line.strip())
         
-        # Find where the real summary starts (after all the key levels info)
-        trading_plan_index = -1
-        for i, line in enumerate(clean_lines):
-            if 'TRADING PLAN' in line:
-                trading_plan_index = i
-                break
-        
-        # Get everything between the start and TRADING PLAN
-        if trading_plan_index > 0:
-            summary_text = '\n'.join(clean_lines[:trading_plan_index])
-        else:
-            summary_text = '\n'.join(clean_lines)
-            
+        # Include everything from the beginning to the end, including TRADING PLAN
+        summary_text = '\n'.join(clean_lines)
         summary_text = summary_text.strip()
     
     return {
