@@ -3,23 +3,26 @@ db_schema:
   keylevelsraw:
     client: none
     columns:
-    - admin_ui: {order: 0, width: 200}
+    - admin_ui: {width: 200}
+      name: price_with_range
+      type: string
+    - admin_ui: {width: 200}
       name: price
       type: number
-    - admin_ui: {order: 1, width: 200}
-      name: notes
-      type: string
-    - admin_ui: {order: 2, width: 200}
-      name: vdline
-      type: number
-    - admin_ui: {order: 3, width: 200}
-      name: vdline_type
-      type: string
-    - admin_ui: {order: 0.5, width: 200}
+    - admin_ui: {width: 200}
       name: severity
       type: string
-    - admin_ui: {order: -1, width: 200}
-      name: price_with_range
+    - admin_ui: {width: 200}
+      name: notes
+      type: string
+    - admin_ui: {width: 200}
+      name: vdline
+      type: number
+    - admin_ui: {width: 200}
+      name: vdline_type
+      type: string
+    - admin_ui: {width: 200}
+      name: type
       type: string
     server: full
     title: KeyLevelsRaw
@@ -60,45 +63,45 @@ db_schema:
   parsed_sections:
     client: none
     columns:
-    - admin_ui: {order: 0, width: 108}
+    - admin_ui: {width: 108}
       name: newsletter_id
       type: string
-    - admin_ui: {order: 1, width: 334}
+    - admin_ui: {width: 200}
+      name: timing_detail
+      type: string
+    - admin_ui: {width: 200}
+      name: upcoming_events
+      type: string
+    - admin_ui: {width: 334}
       name: market_summary
       type: string
     - admin_ui: {width: 200}
       name: key_levels
       type: string
-    - admin_ui: {order: 3, width: 133}
+    - admin_ui: {width: 133}
       name: key_levels_raw
       type: string
-    - admin_ui: {order: 4, width: 315}
+    - admin_ui: {width: 315}
       name: trading_plan
       type: string
-    - admin_ui: {order: 5, width: 322}
+    - admin_ui: {width: 322}
       name: plan_summary
       type: string
-    - admin_ui: {order: 6, width: 132}
+    - admin_ui: {width: 132}
       name: summary
-      type: string
-    - admin_ui: {order: 0.5, width: 200}
-      name: timing_detail
-      type: string
-    - admin_ui: {order: 0.75, width: 200}
-      name: upcoming_events
       type: string
     server: full
     title: parsed_sections
   vdlines:
     client: none
     columns:
-    - admin_ui: {order: 0, width: 200}
+    - admin_ui: {width: 200}
       name: Price
       type: number
-    - admin_ui: {order: 1, width: 200}
+    - admin_ui: {width: 200}
       name: Type
       type: string
-    - admin_ui: {order: 2, width: 200}
+    - admin_ui: {width: 200}
       name: last_updated
       type: datetime
     server: full
