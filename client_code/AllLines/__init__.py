@@ -65,7 +65,7 @@ class AllLines(AllLinesTemplate):
         notification.show()
       else:
         # Show notification if no data
-        notification = Notification(f"No data found in KeyLevelsRaw table. Row count: {row_count}", timeout=5)
+        notification = Notification(f"No data found in keylevelsraw table. Row count: {row_count}", timeout=5)
         notification.show()
         # Clear the repeating panel
         self.repeating_panel_1.items = []
@@ -104,7 +104,7 @@ class AllLines(AllLinesTemplate):
       row_count = len(rows)
       
       # Print debug info
-      print("=== DEBUG INFO FOR KEYLEVELSRAW TABLE ===")
+      print("=== DEBUG INFO FOR keylevelsraw TABLE ===")
       print(f"Row count: {row_count}")
       
       if row_count > 0:
@@ -120,15 +120,15 @@ class AllLines(AllLinesTemplate):
           for col in column_names:
             print(f"  {col}: {row[col]}")
       else:
-        print("No rows found in KeyLevelsRaw table")
+        print("No rows found in keylevelsraw table")
       
       # Display a notification with the row count
-      notification = Notification(f"Debug complete. Found {row_count} rows in KeyLevelsRaw table.", timeout=5)
+      notification = Notification(f"Debug complete. Found {row_count} rows in keylevelsraw table.", timeout=5)
       notification.show()
       
     except Exception as e:
       # Handle any errors
-      print(f"Error debugging KeyLevelsRaw table: {str(e)}")
+      print(f"Error debugging keylevelsraw table: {str(e)}")
       notification = Notification(f"Error debugging table: {str(e)}", timeout=5)
       notification.show()
 

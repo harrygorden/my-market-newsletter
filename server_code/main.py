@@ -155,18 +155,18 @@ def print_data_to_form():
 @anvil.server.callable
 def get_all_lines_data():
     """
-    Retrieves all rows from the KeyLevelsRaw table for display in the AllLines form.
+    Retrieves all rows from the keylevelsraw table for display in the AllLines form.
     
     Returns:
-        list: A list of dictionaries representing each row in the KeyLevelsRaw table
+        list: A list of dictionaries representing each row in the keylevelsraw table
     """
     try:
         print("\n=== BEGIN get_all_lines_data ===")
-        # Get all rows from the KeyLevelsRaw table
-        key_levels = app_tables.KeyLevelsRaw.search()
+        # Get all rows from the keylevelsraw table
+        key_levels = app_tables.keylevelsraw.search()
         
         # Print debugging information about what was retrieved
-        print(f"Retrieved {len(key_levels)} rows from KeyLevelsRaw table")
+        print(f"Retrieved {len(key_levels)} rows from keylevelsraw table")
         if len(key_levels) > 0:
             print(f"First row column names: {list(key_levels[0].keys())}")
             print(f"First row values: {list(key_levels[0].values())}")
@@ -197,7 +197,7 @@ def get_all_lines_data():
         # Return the list of dictionaries
         return result
     except Exception as e:
-        print(f"Error retrieving data from KeyLevelsRaw: {str(e)}")
+        print(f"Error retrieving data from keylevelsraw: {str(e)}")
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
         # Return an empty list in case of error
@@ -211,28 +211,28 @@ def refresh_all_lines_data_bg():
     Background task version of get_all_lines_data with enhanced logging.
     
     Returns:
-        list: A list of dictionaries representing each row in the KeyLevelsRaw table
+        list: A list of dictionaries representing each row in the keylevelsraw table
     """
     try:
         print("=== Starting refresh_all_lines_data_bg background task ===")
         
-        # Get all rows from the KeyLevelsRaw table
-        print("Querying KeyLevelsRaw table...")
-        key_levels = app_tables.KeyLevelsRaw.search()
+        # Get all rows from the keylevelsraw table
+        print("Querying keylevelsraw table...")
+        key_levels = app_tables.keylevelsraw.search()
         
         # Print detailed debugging information
         row_count = len(key_levels)
-        print(f"Retrieved {row_count} rows from KeyLevelsRaw table")
+        print(f"Retrieved {row_count} rows from keylevelsraw table")
         
         # Print all available tables for debugging
         all_tables = [table.__name__ for table in dir(app_tables) if not table.startswith('_')]
         print(f"Available tables: {all_tables}")
         
-        # Print table schema for KeyLevelsRaw
-        if 'KeyLevelsRaw' in all_tables:
-            print("KeyLevelsRaw table schema:")
+        # Print table schema for keylevelsraw
+        if 'keylevelsraw' in all_tables:
+            print("keylevelsraw table schema:")
             try:
-                schema = app_tables.KeyLevelsRaw.list_columns()
+                schema = app_tables.keylevelsraw.list_columns()
                 print(f"Table columns: {schema}")
             except Exception as e:
                 print(f"Error getting schema: {str(e)}")
@@ -245,7 +245,7 @@ def refresh_all_lines_data_bg():
             for key, value in first_row.items():
                 print(f"  {key}: {value} (type: {type(value).__name__})")
         else:
-            print("No rows found in KeyLevelsRaw table. This may indicate:")
+            print("No rows found in keylevelsraw table. This may indicate:")
             print("1. The extract_and_store_key_levels function did not insert any data")
             print("2. The table exists but is empty")
             print("3. There might be permission issues accessing the table")
@@ -287,13 +287,13 @@ def refresh_all_lines_data_bg():
 @anvil.server.callable
 def force_refresh_all_lines():
     """
-    Force a refresh of the KeyLevelsRaw table data and return the refreshed data.
+    Force a refresh of the keylevelsraw table data and return the refreshed data.
     This function can be called from anywhere to ensure the most up-to-date data is returned.
     
     Returns:
-        list: A list of dictionaries representing each row in the KeyLevelsRaw table
+        list: A list of dictionaries representing each row in the keylevelsraw table
     """
-    print("\n=== FORCE REFRESH requested for KeyLevelsRaw table ===")
+    print("\n=== FORCE REFRESH requested for keylevelsraw table ===")
     
     # Call the regular function to get the data with all its debugging
     return get_all_lines_data()
@@ -302,25 +302,25 @@ def force_refresh_all_lines():
 @anvil.server.callable
 def debug_keylevelsraw_table():
     """
-    Debug function to directly check the contents of the KeyLevelsRaw table
+    Debug function to directly check the contents of the keylevelsraw table
     and print detailed information about each row.
     
     Returns:
         dict: Debug information about the table
     """
     try:
-        # Get all rows from the KeyLevelsRaw table
-        rows = app_tables.KeyLevelsRaw.search()
+        # Get all rows from the keylevelsraw table
+        rows = app_tables.keylevelsraw.search()
         row_count = len(rows)
         
-        print(f"\n=== DEBUG: KeyLevelsRaw table ===")
-        print(f"Found {row_count} rows in KeyLevelsRaw table")
+        print(f"\n=== DEBUG: keylevelsraw table ===")
+        print(f"Found {row_count} rows in keylevelsraw table")
         
         # Debug info about the table itself
         try:
             print("Table metadata:")
-            print(f"  Table name: {app_tables.KeyLevelsRaw.__table_name__}")
-            print(f"  Table id: {app_tables.KeyLevelsRaw.__table_id__}")
+            print(f"  Table name: {app_tables.keylevelsraw.__table_name__}")
+            print(f"  Table id: {app_tables.keylevelsraw.__table_id__}")
         except Exception as table_err:
             print(f"Error getting table metadata: {str(table_err)}")
         
@@ -386,10 +386,10 @@ def debug_keylevelsraw_table():
 @anvil.server.callable
 def get_keylevels():
     """
-    Simple function to fetch all data from the KeyLevelsRaw table.
+    Simple function to fetch all data from the keylevelsraw table.
     Returns the raw rows that can be mapped in the UI as needed.
     """
-    return app_tables.KeyLevelsRaw.search()
+    return app_tables.keylevelsraw.search()
 
 
 if __name__ == "__main__":
