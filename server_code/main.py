@@ -30,6 +30,11 @@ from send_summary import send_summary_email
 @anvil.server.background_task
 @anvil.server.callable
 def process_newsletter():
+    """
+    Primary function that orchestrates the entire newsletter processing workflow.
+    Retrieves the latest newsletter, checks for duplicates, processes content,
+    and saves data to various tables.
+    """
     try:
         print("=== Starting process_newsletter ===")
         # Retrieve the latest newsletter email
@@ -57,7 +62,6 @@ def process_newsletter():
         print("Cleaning newsletter content...")
         cleaned_body = clean_newsletter(newsletter.get("raw_body"))
         print(f"Cleaned body length: {len(cleaned_body)}")
-        print(f"First 100 characters of cleaned body: {cleaned_body[:100]}")
         print("Newsletter cleaning completed")
 
         # Parse the cleaned email to extract key sections and a summary
@@ -133,6 +137,13 @@ def delete_most_recent_records():
 
 @anvil.server.callable
 def print_data_to_form():
+    """
+    Retrieve the most recent summary, timing details, and upcoming events
+    from the parsed_sections table for display.
+    
+    Returns:
+        dict: Dictionary containing summary, timing detail, and upcoming events
+    """
     # Get the most recent summary from parsed_sections table
     latest_sections = app_tables.parsed_sections.search(
         tables.order_by("newsletter_id", ascending=False)
@@ -152,246 +163,6 @@ def print_data_to_form():
     }
 
 
-@anvil.server.callable
-def get_all_lines_data():
-    """
-    Retrieves all rows from the keylevelsraw table for display in the AllLines form.
-    
-    Returns:
-        list: A list of dictionaries representing each row in the keylevelsraw table
-    """
-    try:
-        print("\n=== BEGIN get_all_lines_data ===")
-        # Get all rows from the keylevelsraw table
-        key_levels = app_tables.keylevelsraw.search()
-        
-        # Print debugging information about what was retrieved
-        print(f"Retrieved {len(key_levels)} rows from keylevelsraw table")
-        if len(key_levels) > 0:
-            print(f"First row column names: {list(key_levels[0].keys())}")
-            print(f"First row values: {list(key_levels[0].values())}")
-        
-        # Convert rows to a list of dictionaries for the data grid
-        result = []
-        for row in key_levels:
-            item = {
-                "price": row.get("price_with_range") or row.get("price", ""),
-                "major": row.get("severity", ""),
-                "notes": row.get("note", ""),
-                "vdline": row.get("vdline", ""),
-                "vdline_type": row.get("vdline_type", "")
-            }
-            result.append(item)
-            
-            # Print the first item for debugging
-            if len(result) == 1:
-                print(f"First transformed row: {item}")
-        
-        # Print debug info about the result
-        print(f"Returning {len(result)} formatted rows")
-        if len(result) > 0:
-            print(f"First result item keys: {list(result[0].keys())}")
-            print(f"First result item values: {list(result[0].values())}")
-            
-        print("=== END get_all_lines_data ===\n")
-        # Return the list of dictionaries
-        return result
-    except Exception as e:
-        print(f"Error retrieving data from keylevelsraw: {str(e)}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
-        # Return an empty list in case of error
-        return []
-
-
-@anvil.server.background_task
-@anvil.server.callable
-def refresh_all_lines_data_bg():
-    """
-    Background task version of get_all_lines_data with enhanced logging.
-    
-    Returns:
-        list: A list of dictionaries representing each row in the keylevelsraw table
-    """
-    try:
-        print("=== Starting refresh_all_lines_data_bg background task ===")
-        
-        # Get all rows from the keylevelsraw table
-        print("Querying keylevelsraw table...")
-        key_levels = app_tables.keylevelsraw.search()
-        
-        # Print detailed debugging information
-        row_count = len(key_levels)
-        print(f"Retrieved {row_count} rows from keylevelsraw table")
-        
-        # Print all available tables for debugging
-        all_tables = [table.__name__ for table in dir(app_tables) if not table.startswith('_')]
-        print(f"Available tables: {all_tables}")
-        
-        # Print table schema for keylevelsraw
-        if 'keylevelsraw' in all_tables:
-            print("keylevelsraw table schema:")
-            try:
-                schema = app_tables.keylevelsraw.list_columns()
-                print(f"Table columns: {schema}")
-            except Exception as e:
-                print(f"Error getting schema: {str(e)}")
-        
-        if row_count > 0:
-            print("First row details:")
-            first_row = key_levels[0]
-            print(f"First row column names: {list(first_row.keys())}")
-            print(f"First row values: {list(first_row.values())}")
-            for key, value in first_row.items():
-                print(f"  {key}: {value} (type: {type(value).__name__})")
-        else:
-            print("No rows found in keylevelsraw table. This may indicate:")
-            print("1. The extract_and_store_key_levels function did not insert any data")
-            print("2. The table exists but is empty")
-            print("3. There might be permission issues accessing the table")
-        
-        # Convert rows to a list of dictionaries for the data grid
-        print("Converting database rows to dictionary format for DataGrid...")
-        result = []
-        for row in key_levels:
-            row_dict = {
-                "price": row.get("price_with_range") or row.get("price", ""),
-                "major": row.get("severity", ""),
-                "notes": row.get("note", ""),
-                "vdline": row.get("vdline", ""),
-                "vdline_type": row.get("vdline_type", "")
-            }
-            result.append(row_dict)
-            # Print for the first few rows to debug data transformation
-            if len(result) <= 3:
-                print(f"Transformed row {len(result)}: {row_dict}")
-        
-        # Print debug info about the result
-        print(f"Returning {len(result)} formatted rows")
-        if len(result) > 0:
-            print(f"First result item keys: {result[0].keys()}")
-            print(f"Sample data: {result[:3]}")
-            
-        print("=== refresh_all_lines_data_bg completed successfully ===")
-        # Return the list of dictionaries
-        return result
-    except Exception as e:
-        print(f"=== ERROR in refresh_all_lines_data_bg: {str(e)} ===")
-        print(f"Error type: {type(e).__name__}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
-        # Return an empty list in case of error to avoid crashing the client
-        return {"error": str(e)}
-
-
-@anvil.server.callable
-def force_refresh_all_lines():
-    """
-    Force a refresh of the keylevelsraw table data and return the refreshed data.
-    This function can be called from anywhere to ensure the most up-to-date data is returned.
-    
-    Returns:
-        list: A list of dictionaries representing each row in the keylevelsraw table
-    """
-    print("\n=== FORCE REFRESH requested for keylevelsraw table ===")
-    
-    # Call the regular function to get the data with all its debugging
-    return get_all_lines_data()
-
-
-@anvil.server.callable
-def debug_keylevelsraw_table():
-    """
-    Debug function to directly check the contents of the keylevelsraw table
-    and print detailed information about each row.
-    
-    Returns:
-        dict: Debug information about the table
-    """
-    try:
-        # Get all rows from the keylevelsraw table
-        rows = app_tables.keylevelsraw.search()
-        row_count = len(rows)
-        
-        print(f"\n=== DEBUG: keylevelsraw table ===")
-        print(f"Found {row_count} rows in keylevelsraw table")
-        
-        # Debug info about the table itself
-        try:
-            print("Table metadata:")
-            print(f"  Table name: {app_tables.keylevelsraw.__table_name__}")
-            print(f"  Table id: {app_tables.keylevelsraw.__table_id__}")
-        except Exception as table_err:
-            print(f"Error getting table metadata: {str(table_err)}")
-        
-        # Get column names from the first row if available
-        column_names = []
-        if row_count > 0:
-            first_row = rows[0]
-            column_names = list(first_row.keys())
-            print(f"Column names: {column_names}")
-            
-            # Print types of each column value
-            print("First row column types:")
-            for col in column_names:
-                value = first_row[col]
-                print(f"  {col}: {type(value).__name__} = {value}")
-        
-        # Print details of each row (limit to first 5 for brevity)
-        max_rows_to_print = min(5, row_count)
-        for i, row in enumerate(rows[:max_rows_to_print]):
-            print(f"Row {i+1}:")
-            for col in column_names:
-                print(f"  {col}: {row[col]}")
-            print("---")
-        
-        # Check if we need a warning about field mapping based on the memory information
-        expected_ui_fields = ["price", "major", "notes", "vdline", "vdline_type"]
-        field_mapping_warnings = []
-        
-        # Check for each expected UI field if there's a clear mapping to DB field
-        if row_count > 0:
-            db_to_ui_mapping = {
-                "price_with_range": "price",
-                "price": "price",
-                "severity": "major",
-                "note": "notes",
-                "vdline": "vdline",
-                "vdline_type": "vdline_type"
-            }
-            
-            for db_field, ui_field in db_to_ui_mapping.items():
-                if db_field not in column_names:
-                    field_mapping_warnings.append(f"Database field '{db_field}' expected for UI field '{ui_field}' is missing")
-        
-        if field_mapping_warnings:
-            print("WARNING: Field mapping issues detected:")
-            for warning in field_mapping_warnings:
-                print(f"  - {warning}")
-        
-        return {
-            "row_count": row_count,
-            "column_names": column_names,
-            "sample_rows": [{col: row[col] for col in column_names} for row in rows[:3]] if row_count > 0 else [],
-            "field_mapping_warnings": field_mapping_warnings if field_mapping_warnings else []
-        }
-        
-    except Exception as e:
-        print(f"Error in debug_keylevelsraw_table: {str(e)}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
-        return {"error": str(e)}
-
-
-@anvil.server.callable
-def get_keylevels():
-    """
-    Simple function to fetch all data from the keylevelsraw table.
-    Returns the raw rows that can be mapped in the UI as needed.
-    """
-    return app_tables.keylevelsraw.search()
-
-
 if __name__ == "__main__":
     # Launch the newsletter processing as a background task
-    task = anvil.server.launch_background_task('process_newsletter') 
+    task = anvil.server.launch_background_task('process_newsletter')
